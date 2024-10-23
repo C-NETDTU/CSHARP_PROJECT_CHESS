@@ -396,3 +396,7 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+.idea/.idea.CSHARP_PROJECT_CHESS/.idea/encodings.xml
+.idea/.idea.CSHARP_PROJECT_CHESS/.idea/indexLayout.xml
+.idea/.idea.CSHARP_PROJECT_CHESS/.idea/inspectionProfiles/Project_Default.xml
+.idea/.idea.CSHARP_PROJECT_CHESS/.idea/vcs.xml
