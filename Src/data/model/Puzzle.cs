@@ -1,52 +1,60 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
+using System.Text.Json;
+using ThirdParty.Json.LitJson;
 
 namespace src.data.model
 {
     public class Puzzle
     {
         [BsonId]
-        public ObjectId Id { get; set; }
+        [BsonRepresentation(BsonType.ObjectId)]
+        public string Id { get; set; } = null!;
 
         [BsonElement("PuzzleId")]
-        public string PuzzleId { get; set; }
+        public string? PuzzleId { get; set; } = null!;
 
         [BsonElement("FEN")]
-        public string FEN { get; set; }
+        public string? FEN { get; set; } = null!;
 
         [BsonElement("Moves")]
-        public string Moves { get; set; }
+        public string? Moves { get; set; } = null!;
 
         [BsonElement("Rating")]
-        public int Rating { get; set; }
+        public int? Rating { get; set; } = null!;
 
         [BsonElement("RatingDeviation")]
-        public int RatingDeviation { get; set; }
+        public int? RatingDeviation { get; set; } = null!;
 
         [BsonElement("Popularity")]
-        public int Popularity { get; set; }
+        public int? Popularity { get; set; } = null!;
 
         [BsonElement("NbPlays")]
-        public int NbPlays { get; set; }
+        public int? NbPlays { get; set; } = null!;
 
         [BsonElement("Themes")]
-        public string Themes { get; set; }
+        public string? Themes { get; set; } = null!;
 
         [BsonElement("GameUrl")]
-        public string GameUrl { get; set; }
+        public string? GameUrl { get; set; } = null!;
 
-        public Puzzle(ObjectId id, string puzzleId, string fen, string moves, int rating, int ratingDeviation, int popularity, int nbPlays, string themes, string gameUrl)
+        [BsonElement("OpeningTags")]
+        public string? OpeningTags { get; set; } = null!;
+        /*
+        [BsonConstructor]
+        public Puzzle(string Id, string PuzzleId, string FEN, string Moves, int Rating, int RatingDeviation, int Popularity, int NbPlays, string Themes, string GameUrl)
         {
-            Id = id;
-            PuzzleId = puzzleId;
-            FEN = fen;
-            Moves = moves;
-            Rating = rating;
-            RatingDeviation = ratingDeviation;
-            Popularity = popularity;
-            NbPlays = nbPlays;
-            Themes = themes;
-            GameUrl = gameUrl;
+            this.Id = Id;
+            this.PuzzleId = PuzzleId;
+            this.FEN = FEN;
+            this.Moves = Moves;
+            this.Rating = Rating;
+            this.RatingDeviation = RatingDeviation;
+            this.Popularity = Popularity;
+            this.NbPlays = NbPlays;
+            this.Themes = Themes;
+            this.GameUrl = GameUrl;
         }
+        */
     }
 }
