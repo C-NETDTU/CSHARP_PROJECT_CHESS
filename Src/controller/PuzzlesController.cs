@@ -1,6 +1,8 @@
 ﻿using src.data.model;
 using src.services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http.HttpResults;
+using System.Net;
 
 namespace src.controller;
 
@@ -20,7 +22,7 @@ public class PuzzleController : ControllerBase
     [HttpGet("{id:length(24)}")]
     public async Task<ActionResult<Puzzle>> Get(string id)
     {
-        var Puzzle = await _puzzleService.GetAsync(id);
+        var Puzzle = await _puzzleService.GetAsyncId(id);
 
         if (Puzzle is null)
         {
@@ -29,6 +31,8 @@ public class PuzzleController : ControllerBase
 
         return Puzzle;
     }
+    
+
 
     [HttpPost]
     public async Task<IActionResult> Post(Puzzle newPuzzle)
@@ -41,7 +45,7 @@ public class PuzzleController : ControllerBase
     [HttpPut("{id:length(24)}")]
     public async Task<IActionResult> Update(string id, Puzzle updatedPuzzle)
     {
-        var puzzle = await _puzzleService.GetAsync(id);
+        var puzzle = await _puzzleService.GetAsyncId(id);
 
        if (puzzle is null)
         {
@@ -58,7 +62,7 @@ public class PuzzleController : ControllerBase
     [HttpDelete("{id:length(24)}")]
     public async Task<IActionResult> Delete(string id)
     {
-        var Puzzle = await _puzzleService.GetAsync(id);
+        var Puzzle = await _puzzleService.GetAsyncId(id);
 
         if (Puzzle is null)
         {
@@ -68,5 +72,12 @@ public class PuzzleController : ControllerBase
         await _puzzleService.RemoveAsync(id);
 
         return NoContent();
+    }
+
+    [HttpGet("themes/{themes}")]
+    public async Task<List<Puzzle>> GetThemes(string themes)
+    {
+        return await _puzzleService.GetAsyncThemes(themes);
+      
     }
 }

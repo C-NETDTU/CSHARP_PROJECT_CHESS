@@ -25,8 +25,14 @@ public class PuzzleService
     public async Task<List<Puzzle>> GetAsync() =>
         await _puzzlesCollection.Find(_ => true).ToListAsync();
 
-    public async Task<Puzzle?> GetAsync(string id) =>
+    public async Task<Puzzle?> GetAsyncId(string id) =>
         await _puzzlesCollection.Find(x => x.Id == id).FirstOrDefaultAsync();
+    public async Task<List<Puzzle>?> GetAsyncThemes(string Themes)
+    {
+        var filter = Builders<Puzzle>.Filter.Regex("Themes",new MongoDB.Bson.BsonRegularExpression($".*{Themes},? .*","i"));
+        return await _puzzlesCollection.Find(filter).ToListAsync();
+       
+    }
 
     public async Task CreateAsync(Puzzle newPuzzle) =>
         await _puzzlesCollection.InsertOneAsync(newPuzzle);

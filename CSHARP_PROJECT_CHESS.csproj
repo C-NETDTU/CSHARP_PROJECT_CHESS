@@ -22,4 +22,9 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.9.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="src\data\network\" />
+    <Folder Include="src\data\repositories\" />
+  </ItemGroup>
+
 </Project>

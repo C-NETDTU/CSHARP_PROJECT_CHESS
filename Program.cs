@@ -1,6 +1,4 @@
 ﻿using src.data.model;
-using src.data.network;
-using src.data.repositories.MongoDB;
 using MongoDB.Driver;
 using Microsoft.EntityFrameworkCore;
 using MongoDB.EntityFrameworkCore;
