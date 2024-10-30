@@ -9,7 +9,7 @@ namespace src.data.model
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
-        public string Id { get; set; } = null!;
+        public string Id { get; set; } = string.Empty!;
 
         [BsonElement("PuzzleId")]
         public string? PuzzleId { get; set; } = null!;
@@ -23,38 +23,10 @@ namespace src.data.model
         [BsonElement("Rating")]
         public int? Rating { get; set; } = null!;
 
-        [BsonElement("RatingDeviation")]
-        public int? RatingDeviation { get; set; } = null!;
 
-        [BsonElement("Popularity")]
-        public int? Popularity { get; set; } = null!;
-
-        [BsonElement("NbPlays")]
-        public int? NbPlays { get; set; } = null!;
 
         [BsonElement("Themes")]
-        public string? Themes { get; set; } = null!;
+        public string Themes { get; set; } = string.Empty;
 
-        [BsonElement("GameUrl")]
-        public string? GameUrl { get; set; } = null!;
-
-        [BsonElement("OpeningTags")]
-        public string? OpeningTags { get; set; } = null!;
-        /*
-        [BsonConstructor]
-        public Puzzle(string Id, string PuzzleId, string FEN, string Moves, int Rating, int RatingDeviation, int Popularity, int NbPlays, string Themes, string GameUrl)
-        {
-            this.Id = Id;
-            this.PuzzleId = PuzzleId;
-            this.FEN = FEN;
-            this.Moves = Moves;
-            this.Rating = Rating;
-            this.RatingDeviation = RatingDeviation;
-            this.Popularity = Popularity;
-            this.NbPlays = NbPlays;
-            this.Themes = Themes;
-            this.GameUrl = GameUrl;
-        }
-        */
     }
 }

@@ -11,9 +11,14 @@ namespace src.controller;
 public class PuzzleController : ControllerBase
 {
     private readonly PuzzleService _puzzleService;
+    private readonly ILogger<PuzzleController> _logger;
 
-    public PuzzleController(PuzzleService puzzleService) =>
+    public PuzzleController(ILogger<PuzzleController> logger, PuzzleService puzzleService)
+    {
+        _logger = logger;
         _puzzleService = puzzleService;
+    }
+
 
     [HttpGet]
     public async Task<List<Puzzle>> Get() =>
@@ -74,10 +79,16 @@ public class PuzzleController : ControllerBase
         return NoContent();
     }
 
+
     [HttpGet("themes/{themes}")]
-    public async Task<List<Puzzle>> GetThemes(string themes)
+    public async Task<ActionResult<List<Puzzle>>> GetThemes(string themes)
     {
-        return await _puzzleService.GetAsyncThemes(themes);
-      
+        var puzzles = await _puzzleService.GetAsyncThemes(themes);
+        if (puzzles == null || !puzzles.Any())
+        {
+            return NotFound();
+        }
+        return Ok(puzzles);
     }
+
 }

@@ -1,13 +1,12 @@
 ﻿using src.data.model;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
-
+using System.Linq;
 namespace src.services;
 
 public class PuzzleService
 {
     private readonly IMongoCollection<Puzzle>? _puzzlesCollection;
-
     public PuzzleService(
         IOptions<PuzzleDBSettings> PuzzleDatabaseSettings
         )
@@ -25,13 +24,16 @@ public class PuzzleService
     public async Task<List<Puzzle>> GetAsync() =>
         await _puzzlesCollection.Find(_ => true).ToListAsync();
 
-    public async Task<Puzzle?> GetAsyncId(string id) =>
-        await _puzzlesCollection.Find(x => x.Id == id).FirstOrDefaultAsync();
-    public async Task<List<Puzzle>?> GetAsyncThemes(string Themes)
+    public async Task<Puzzle?> GetAsyncId(string id)
     {
-        var filter = Builders<Puzzle>.Filter.Regex("Themes",new MongoDB.Bson.BsonRegularExpression($".*{Themes},? .*","i"));
+        var puzzle = await _puzzlesCollection.Find(x => x.Id == id).FirstOrDefaultAsync();
+        return puzzle;
+
+    }
+    public async Task<List<Puzzle>?> GetAsyncThemes(string themes)
+    {
+        var filter = Builders<Puzzle>.Filter.Where(p => p.Themes.Contains(themes));
         return await _puzzlesCollection.Find(filter).ToListAsync();
-       
     }
 
     public async Task CreateAsync(Puzzle newPuzzle) =>
