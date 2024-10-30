@@ -110,6 +110,7 @@ public class PuzzleController : ControllerBase
         }
         return Ok(randomPuzzle);
     }
+    /*
     [HttpGet("random/themes/{theme}")]
     public async Task<ActionResult<Puzzle>?> GetRandomByTheme(string theme)
     {
@@ -121,7 +122,33 @@ public class PuzzleController : ControllerBase
         }
         return Ok(randomPuzzle);
     }
+    */
+    [HttpGet("random/{criteria}/{match}")]
+    public async Task<ActionResult<Puzzle>?> GetRandomByCriteria(string criteria, string match)
+    {
+        var randomPuzzle = new Puzzle();
+        if(criteria == "Rating")
+        {
+            if (Int32.TryParse(match, out int matchInt)){
+                randomPuzzle = await _puzzleService.GetAsyncRandomByCriteria(criteria,matchInt);
+            }
+            else
+            {
+                _logger.LogCritical($"\n Cannot retrieve random puzzle by rating.. Parsing went wrong.");
 
+            }
+        }
+        else
+        {
+            randomPuzzle = await _puzzleService.GetAsyncRandomByCriteria(criteria, match);
+        }
+        if (randomPuzzle == null)
+        {
+            _logger.LogCritical($"\n Cannot retrieve random puzzle by: \n Criteria: {criteria} \n match: {match} \n possibly this is not a valid request.");
+            return NotFound();
+        }
+        return Ok(randomPuzzle);
+    }
     [HttpGet("rating/{rating}")]
     public async Task<ActionResult<List<Puzzle>>> GetRating(Int32 rating)
     {
