@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Frontend.Model.ChessPiece;
+using Frontend.Model.ChessMove;
 
 namespace Frontend.Model.ChessBoard
 {
@@ -10,11 +11,15 @@ namespace Frontend.Model.ChessBoard
         public Dictionary<Position, IPiece> Pieces { get; set; }
         public Dictionary<Position, Square> Squares { get; set; }
 
+        public AppliedMove? LastMove { get; set; }
+
+        public Set Turn => LastMove?.Move.Piece.Set == Set.White ? Set.Black : Set.White;
+
         // This default constructor initializes the board with the initial pieces (see bottom of file)
         public Board() : this(InitialPieces) { }
 
         // This constructor initializes the board with the given pieces
-        public Board(Dictionary<Position, IPiece> pieces)
+        public Board(Dictionary<Position, IPiece> pieces, AppliedMove? lastMove = null, Set? turn = Set.White)
         {
             Pieces = new Dictionary<Position, IPiece>(pieces);
             Squares = Enum.GetValues(typeof(Position))

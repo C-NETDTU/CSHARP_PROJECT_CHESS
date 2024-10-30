@@ -66,5 +66,10 @@ namespace Frontend.Model.ChessBoard
         if (file < 1 || file > 8 || rank < 1 || rank > 8)
             throw new ArgumentOutOfRangeException("File and rank must be between 1 and 8.");
         }
+
+        public static string ToString(this Position position)
+        {
+            return $"{position.GetFileChar()}{position.GetRank()}";
+        }
     }
 }

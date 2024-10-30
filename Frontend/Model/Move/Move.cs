@@ -27,25 +27,7 @@ namespace Frontend.Model.ChessMove
                 .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
 
-            if (!updatedPieces.ContainsKey(From))
-            {
-                Console.WriteLine($"Piece successfully removed from {From}");
-            }
-            else
-            {
-                Console.WriteLine($"Piece was not removed from {From}");
-            }
-
             updatedPieces[To] = Piece;
-
-            if(updatedPieces.ContainsKey(To))
-            {
-                Console.WriteLine($"Piece successfully added to {To}");
-            }
-            else
-            {
-                Console.WriteLine($"Piece was not added to {To}");
-            }
 
             return new Board(updatedPieces);
         }
