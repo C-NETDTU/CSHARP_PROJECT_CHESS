@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using System.Linq;
+using MongoDB.Bson;
 namespace src.services;
 
 public class PuzzleService
@@ -30,10 +31,40 @@ public class PuzzleService
         return puzzle;
 
     }
+   
     public async Task<List<Puzzle>?> GetAsyncThemes(string themes)
     {
         var filter = Builders<Puzzle>.Filter.Where(p => p.Themes.Contains(themes));
         return await _puzzlesCollection.Find(filter).ToListAsync();
+    }
+    
+    public async Task<List<Puzzle>?> GetAsyncRating(Int32 rating)
+    {
+        var filter = Builders<Puzzle>.Filter.Where(p => p.Rating == rating);
+        return await _puzzlesCollection.Find(filter).ToListAsync();
+    }
+
+    public async Task<Puzzle?> GetAsyncRandom()
+    {
+        var pipeline = new BsonDocument[]
+    {
+        new BsonDocument("$sample", new BsonDocument("size", 1))
+    };
+
+        var result = await _puzzlesCollection.Aggregate<Puzzle>(pipeline).FirstOrDefaultAsync();
+        return result;
+    }
+
+    public async Task<Puzzle?> GetAsyncRandomByTheme(string theme)
+    {
+        var pipeline = new BsonDocument[]
+        {
+        new BsonDocument("$match", new BsonDocument("Themes", new BsonDocument("$regex", theme).Add("$options", "i"))),       
+        new BsonDocument("$sample", new BsonDocument("size", 1))
+        };
+
+        var result = await _puzzlesCollection.Aggregate<Puzzle>(pipeline).FirstOrDefaultAsync();
+        return result;
     }
 
     public async Task CreateAsync(Puzzle newPuzzle) =>
