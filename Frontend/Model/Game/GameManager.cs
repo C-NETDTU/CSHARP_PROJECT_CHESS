@@ -105,6 +105,23 @@ namespace Frontend.Model.Game
                     System.Console.WriteLine("The promotion piece is: " + consequence.Piece.GetType());
                 }
             }
+            else if (piece is ChessPiece.Pawn)
+            {
+                if (Math.Abs(to.GetFile() - from.GetFile()) == 1 && CurrentBoard[to].IsEmpty)
+                {
+                    var enPassantPosition = PositionMethods.From(to.GetFile(), from.GetRank());
+                    var capturedPiece = CurrentBoard[enPassantPosition].Piece;
+
+                    if (capturedPiece is ChessPiece.Pawn && capturedPiece.Set != piece.Set)
+                    {
+                        preMove = new Capture(piece, enPassantPosition);
+                    }
+                }
+                else if (CurrentBoard[to].IsNotEmpty)
+                {
+                    preMove = new Capture(piece, to);
+                }
+            }
             else if (chessGame.GetPieceAt(chessMove.NewPosition) != null)
             {
                 preMove = new Capture(piece, to);

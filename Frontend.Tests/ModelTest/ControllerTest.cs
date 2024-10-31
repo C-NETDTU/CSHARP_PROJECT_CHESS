@@ -170,7 +170,7 @@ public class GameManagerTests
     {
         // Arrange
         // we'll set up a custom board with a pawn on a7 and a pawn on b2
-        
+
         var gameManager = new GameManager("8/PK6/8/8/8/8/1pk5/8 w - - 0 1");
         Assert.Equal(Set.White, gameManager.CurrentTurn); // White should start first
 
@@ -207,5 +207,37 @@ public class GameManagerTests
         Assert.IsType<King>(board[Position.b7]); // b7 should have a king
         Assert.IsType<Pawn>(board[Position.b2]); // b2 should have a pawn
         Assert.IsType<King>(board[Position.c2]); // c2 should have a king
+    }
+
+    [Fact]
+    public void GameManager_EnPassentIsHandled()
+    {
+
+        var fen = "4k3/8/8/8/3p4/8/4P3/4K3 w - - 0 1";
+        var gameManager = new GameManager(fen);
+
+        var validMoves = gameManager.GetLegalMoves(Position.e2);
+        var move = validMoves.Find(m => m.To == Position.e4);
+        gameManager.ApplyMove(move);
+
+        Assert.Equal(Set.Black, gameManager.CurrentTurn); // Turn should change to black
+        validMoves = gameManager.GetLegalMoves(Position.d4);
+
+        Assert.NotEmpty(validMoves); // Should not be empty
+        Assert.Equal(2, validMoves.Count); // should contain 2 moves
+        Assert.Contains(validMoves, move => move.To == Position.e3); // Pawn can capture with move to e3
+
+        move = validMoves.Find(m => m.To == Position.e3);
+        gameManager.ApplyMove(move);
+
+        System.Console.WriteLine("move made: " + move);
+
+        Assert.Equal(Set.White, gameManager.CurrentTurn); // Turn should change to white
+        Assert.Null(gameManager.CurrentBoard[Position.e4].Piece); // e4 should now be empty
+        Assert.Null(gameManager.CurrentBoard[Position.d4].Piece); // d4 should now be empty
+        Assert.NotNull(gameManager.CurrentBoard[Position.e3].Piece); // e3 should now have a piece
+        Assert.IsType<Pawn>(gameManager.CurrentBoard[Position.e3].Piece); // The piece on e3 should be a pawn
+        Assert.Equal(move.Piece.Set, gameManager.CurrentBoard[Position.e3].Piece.Set); // The piece on e3 should be the same color
+
     }
 }
