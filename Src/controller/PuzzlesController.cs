@@ -40,7 +40,7 @@ public class PuzzleController : ControllerBase
 
         return Puzzle;
     }
-    
+
 
 
     [HttpPost]
@@ -56,7 +56,7 @@ public class PuzzleController : ControllerBase
     {
         var puzzle = await _puzzleService.GetAsyncId(id);
 
-       if (puzzle is null)
+        if (puzzle is null)
         {
             return NotFound();
         }
@@ -99,17 +99,6 @@ public class PuzzleController : ControllerBase
         return Ok(puzzles);
     }
 
-    [HttpGet("random")]
-    public async Task<ActionResult<Puzzle>> GetRandom()
-    {
-        var randomPuzzle = await _puzzleService.GetAsyncRandom();
-        if(randomPuzzle == null)
-        {
-            _logger.LogCritical($"\n Cannot retrieve random puzzle. Check connection to database!");
-            return NotFound();
-        }
-        return Ok(randomPuzzle);
-    }
     /*
     [HttpGet("random/themes/{theme}")]
     public async Task<ActionResult<Puzzle>?> GetRandomByTheme(string theme)
@@ -123,34 +112,47 @@ public class PuzzleController : ControllerBase
         return Ok(randomPuzzle);
     }
     */
-    [HttpGet("random/{criteria}/{match}")]
-    public async Task<ActionResult<Puzzle>?> GetRandomByCriteria(string criteria, string match)
+    [HttpGet("random")]
+    public async Task<ActionResult<Puzzle>> GetRandomByCriteria([FromQuery] string? criteria, [FromQuery] string? match)
     {
         var randomPuzzle = new Puzzle();
-        if(criteria == "Rating")
+        if (criteria != null && match != null)
         {
-            if (Int32.TryParse(match, out int matchInt)){
-                randomPuzzle = await _puzzleService.GetAsyncRandomByCriteria(criteria,matchInt);
+            if (criteria == "Rating")
+            {
+                if (Int32.TryParse(match, out int matchInt))
+                {
+                    randomPuzzle = await _puzzleService.GetAsyncRandomByCriteria(criteria, matchInt);
+                }
+                else
+                {
+                    _logger.LogCritical("\n Cannot retrieve random puzzle by rating.. Parsing went wrong.");
+                    return NotFound();
+                }
             }
             else
             {
-                _logger.LogCritical($"\n Cannot retrieve random puzzle by rating.. Parsing went wrong.");
-
+                if (criteria == "FEN")
+                {
+                    match = Uri.UnescapeDataString(match);
+                }
+                randomPuzzle = await _puzzleService.GetAsyncRandomByCriteria(criteria, match);
+            }
+            if (randomPuzzle == null)
+            {
+                _logger.LogCritical($"\n Cannot retrieve random puzzle by: \n Criteria: {criteria} \n match: {match} \n possibly this is not a valid request.");
+                return NotFound();
             }
         }
         else
         {
-            randomPuzzle = await _puzzleService.GetAsyncRandomByCriteria(criteria, match);
-        }
-        if (randomPuzzle == null)
-        {
-            _logger.LogCritical($"\n Cannot retrieve random puzzle by: \n Criteria: {criteria} \n match: {match} \n possibly this is not a valid request.");
-            return NotFound();
+            randomPuzzle = await _puzzleService.GetAsyncRandom();
         }
         return Ok(randomPuzzle);
     }
-    [HttpGet("rating/{rating}")]
-    public async Task<ActionResult<List<Puzzle>>> GetRating(Int32 rating)
+
+    [HttpGet("rating")]
+    public async Task<ActionResult<List<Puzzle>>> GetRating([FromQuery] Int32 rating)
     {
         var puzzles = await _puzzleService.GetAsyncRating(rating);
         if (puzzles == null || !puzzles.Any()) {
