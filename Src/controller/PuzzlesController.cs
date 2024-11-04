@@ -84,8 +84,8 @@ public class PuzzleController : ControllerBase
     }
 
 
-    [HttpGet("themes/{themes}")]
-    public async Task<ActionResult<List<Puzzle>>> GetThemes(string themes)
+    [HttpGet("themes")]
+    public async Task<ActionResult<List<Puzzle>>> GetThemes([FromQuery] string themes)
     {
         var puzzles = await _puzzleService.GetAsyncThemes(themes);
         if (puzzles == null || !puzzles.Any())
@@ -98,57 +98,35 @@ public class PuzzleController : ControllerBase
 
         return Ok(puzzles);
     }
-
-    /*
-    [HttpGet("random/themes/{theme}")]
-    public async Task<ActionResult<Puzzle>?> GetRandomByTheme(string theme)
-    {
-        var randomPuzzle = await _puzzleService.GetAsyncRandomByTheme(theme);
-        if(randomPuzzle == null)
-        {
-            _logger.LogCritical($"\n Cannot retrieve random puzzle by themes {theme}! Possibly, no such theme exists.");
-            return NotFound();
-        }
-        return Ok(randomPuzzle);
-    }
-    */
     [HttpGet("random")]
     public async Task<ActionResult<Puzzle>> GetRandomByCriteria([FromQuery] string? criteria, [FromQuery] string? match)
     {
-        var randomPuzzle = new Puzzle();
         if (criteria != null && match != null)
         {
-            if (criteria == "Rating")
+            switch (criteria)
             {
-                if (Int32.TryParse(match, out int matchInt))
-                {
-                    randomPuzzle = await _puzzleService.GetAsyncRandomByCriteria(criteria, matchInt);
-                }
-                else
-                {
-                    _logger.LogCritical("\n Cannot retrieve random puzzle by rating.. Parsing went wrong.");
-                    return NotFound();
-                }
-            }
-            else
-            {
-                if (criteria == "FEN")
-                {
+                case "Themes":
+                    return Ok(await _puzzleService.GetAsyncRandomByCriteria(criteria, match));
+                case "Rating":
+                    try
+                    {
+                        Int32.TryParse(match, out int matchInt);
+                        return Ok(await _puzzleService.GetAsyncRandomByCriteria(criteria, matchInt));
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogCritical($"\n error: {ex}. Trouble parsin int. Make sure parsed value is int.");
+                        return BadRequest();
+                    }
+                case "FEN":
                     match = Uri.UnescapeDataString(match);
-                }
-                randomPuzzle = await _puzzleService.GetAsyncRandomByCriteria(criteria, match);
-            }
-            if (randomPuzzle == null)
-            {
-                _logger.LogCritical($"\n Cannot retrieve random puzzle by: \n Criteria: {criteria} \n match: {match} \n possibly this is not a valid request.");
-                return NotFound();
+                    return Ok(await _puzzleService.GetAsyncRandomByCriteria(criteria, match));
+                default:
+                    _logger.LogError("\n Escaped switch-case. Criteria possibly non-existant.");
+                    return BadRequest();
             }
         }
-        else
-        {
-            randomPuzzle = await _puzzleService.GetAsyncRandom();
-        }
-        return Ok(randomPuzzle);
+        return Ok(await _puzzleService.GetAsyncRandom());
     }
 
     [HttpGet("rating")]
