@@ -19,9 +19,9 @@ public class PuzzleService
             PuzzleDatabaseSettings.Value.DatabaseName);
 
         _puzzlesCollection = mongoDatabase.GetCollection<Puzzle>(
-            PuzzleDatabaseSettings.Value.PuzzleCollectionName);
+            PuzzleDatabaseSettings.Value.PuzzleCollectionName) ?? throw new ArgumentNullException(nameof(_puzzlesCollection), "Collection cannot be null");
     }
-
+    
     public async Task<List<Puzzle>> GetAsync() =>
         await _puzzlesCollection.Find(_ => true).ToListAsync();
 
@@ -54,19 +54,6 @@ public class PuzzleService
         var result = await _puzzlesCollection.Aggregate<Puzzle>(pipeline).FirstOrDefaultAsync();
         return result;
     }
-    /*
-    public async Task<Puzzle?> GetAsyncRandomByTheme(string theme)
-    {
-        var pipeline = new BsonDocument[]
-        {
-        new BsonDocument("$match", new BsonDocument("Themes", new BsonDocument("$regex", theme).Add("$options", "i"))),       
-        new BsonDocument("$sample", new BsonDocument("size", 1))
-        };
-
-        var result = await _puzzlesCollection.Aggregate<Puzzle>(pipeline).FirstOrDefaultAsync();
-        return result;
-    }
-    */
     public async Task<Puzzle?> GetAsyncRandomByCriteria<T>(string criteria, T match)
     {
         Puzzle? result = null;
@@ -84,44 +71,23 @@ public class PuzzleService
             }
             return result;
         }
-        else if(match is string matchString)
-        {
+        else if(match is string matchString){
         var pipeline = new BsonDocument[]
         {
-        new BsonDocument("$match", new BsonDocument(criteria, new BsonDocument("$regex", matchString).Add("$options", "i"))),
-        new BsonDocument("$sample", new BsonDocument("size", 1))
+            new BsonDocument("$match", new BsonDocument(criteria, new BsonDocument("$regex", matchString).Add("$options", "i"))),
+            new BsonDocument("$sample", new BsonDocument("size", 1))
         };
 
         result = await _puzzlesCollection.Aggregate<Puzzle>(pipeline).FirstOrDefaultAsync();
-        if (result == null)
-        {
-            Console.WriteLine($"No puzzle found for criteria: {criteria} with match: {match}");
-        }
-        return result;
-        }
-        else
-        {
+        if (result == null){
+                Console.WriteLine($"No puzzle found for criteria: {criteria} with match: {match}");
+            }
+            return result;
+        } else {
+            Console.WriteLine($"No puzzle found.");
             return result;
         }
     }
-    //overloaded method for if you want to retrieve random by rating, which is an int32.
-    /*
-    public async Task<Puzzle?> GetAsyncRandomByCriteria(string criteria, int match)
-    {
-        var pipeline = new BsonDocument[]
-        {
-        new BsonDocument("$match", new BsonDocument(criteria, match)),
-        new BsonDocument("$sample", new BsonDocument("size", 1))
-        };
-
-        var result = await _puzzlesCollection.Aggregate<Puzzle>(pipeline).FirstOrDefaultAsync();
-        if (result == null)
-        {
-            Console.WriteLine($"No puzzle found for criteria: {criteria} with match: {match}");
-        }
-        return result;
-    }
-    */
     public async Task CreateAsync(Puzzle newPuzzle) =>
         await _puzzlesCollection.InsertOneAsync(newPuzzle);
 
