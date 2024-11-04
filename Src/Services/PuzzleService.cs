@@ -19,9 +19,9 @@ public class PuzzleService
             PuzzleDatabaseSettings.Value.DatabaseName);
 
         _puzzlesCollection = mongoDatabase.GetCollection<Puzzle>(
-            PuzzleDatabaseSettings.Value.PuzzleCollectionName) ?? throw new ArgumentNullException(nameof(_puzzlesCollection), "Collection cannot be null");
+            PuzzleDatabaseSettings.Value.PuzzleCollectionName);
     }
-    
+
     public async Task<List<Puzzle>> GetAsync() =>
         await _puzzlesCollection.Find(_ => true).ToListAsync();
 

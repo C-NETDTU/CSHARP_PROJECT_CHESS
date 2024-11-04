@@ -14,6 +14,7 @@ public class PuzzleController : ControllerBase
     private readonly PuzzleService _puzzleService;
     private readonly ILogger<PuzzleController> _logger;
 
+
     public PuzzleController(ILogger<PuzzleController> logger, PuzzleService puzzleService)
     {
         _logger = logger;
@@ -21,13 +22,20 @@ public class PuzzleController : ControllerBase
     }
 
     /*
-     * this method isn't optimised at all. You should never use this, but it is here for future possible usages. 
-     * Since we have over 4mio. elements, this will be extremely slow. Instead, query by id, theme, or random with criteria.
+     * REFRAIN FROM USING THIS METHOD! WE HAVE OVER 4 MIO PUZZLES, THIS WILL TAKE AGES!
      */
+    /// <summary>
+    /// This returns a list of __ALL__ puzzles.
+    /// </summary>
+    /// <returns></returns>
     [HttpGet]
     public async Task<List<Puzzle>> Get() =>
         await _puzzleService.GetAsync();
-
+    /// <summary>
+    /// Gets a specific puzzle with matching object id.
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
     [HttpGet("{id:length(24)}")]
     public async Task<ActionResult<Puzzle>> Get(string id)
     {
@@ -42,7 +50,11 @@ public class PuzzleController : ControllerBase
     }
 
 
-
+    /// <summary>
+    /// Post a new puzzle
+    /// </summary>
+    /// <param name="newPuzzle"></param>
+    /// <returns></returns>
     [HttpPost]
     public async Task<IActionResult> Post(Puzzle newPuzzle)
     {
@@ -50,7 +62,12 @@ public class PuzzleController : ControllerBase
 
         return CreatedAtAction(nameof(Get), new { id = newPuzzle.Id }, newPuzzle);
     }
-
+    /// <summary>
+    /// This updates information in an existing puzzle, that matches the id.
+    /// </summary>
+    /// <param name="id"></param>
+    /// <param name="updatedPuzzle"></param>
+    /// <returns></returns>
     [HttpPut("{id:length(24)}")]
     public async Task<IActionResult> Update(string id, Puzzle updatedPuzzle)
     {
@@ -68,6 +85,11 @@ public class PuzzleController : ControllerBase
         return NoContent();
     }
 
+    /// <summary>
+    /// This deletes an existing puzzle.
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
     [HttpDelete("{id:length(24)}")]
     public async Task<IActionResult> Delete(string id)
     {
@@ -83,7 +105,11 @@ public class PuzzleController : ControllerBase
         return NoContent();
     }
 
-
+    /// <summary>
+    /// This gets a list of all puzzles with matching theme.
+    /// </summary>
+    /// <param name="themes"></param>
+    /// <returns></returns>
     [HttpGet("themes")]
     public async Task<ActionResult<List<Puzzle>>> GetThemes([FromQuery] string themes)
     {
@@ -98,12 +124,12 @@ public class PuzzleController : ControllerBase
 
         return Ok(puzzles);
     }
-    /*
-     I think this is the goto way to retrieve puzzles. We can retrieve a random puzzle through the use of query paramters, as such:
-        localhost:<port>/api/puzzle/random?criteria={criteria}&match={match}. An example could be querying for themes, as such:
-        .../random?criteria=Themes&match=discoveredAttack endGame 
-     Please note that if you query by themes, they need to be in alpabetic order.
-     */
+    /// <summary>
+    /// This retrieves a random puzzle with matching criteria and match. Should be able to accept any type.
+    /// </summary>
+    /// <param name="criteria"></param>
+    /// <param name="match"></param>
+    /// <returns></returns>
     [HttpGet("random")]
     public async Task<ActionResult<Puzzle>> GetRandomByCriteria([FromQuery] string? criteria, [FromQuery] string? match)
     {
@@ -135,7 +161,11 @@ public class PuzzleController : ControllerBase
         }
         return Ok(await _puzzleService.GetAsyncRandom());
     }
-
+    /// <summary>
+    /// This retrieves a puzzle with matching rating.
+    /// </summary>
+    /// <param name="rating"></param>
+    /// <returns></returns>
     [HttpGet("rating")]
     public async Task<ActionResult<List<Puzzle>>> GetRating([FromQuery] Int32 rating)
     {
