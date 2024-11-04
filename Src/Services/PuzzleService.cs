@@ -67,22 +67,45 @@ public class PuzzleService
         return result;
     }
     */
-    public async Task<Puzzle?> GetAsyncRandomByCriteria(string criteria, string match)
+    public async Task<Puzzle?> GetAsyncRandomByCriteria<T>(string criteria, T match)
     {
+        Puzzle? result = null;
+        if(criteria == "Rating" && match is int matchInt)
+        {
+            var pipelineint = new BsonDocument[]
+            {
+            new BsonDocument("$match", new BsonDocument(criteria, matchInt)),
+            new BsonDocument("$sample", new BsonDocument("size", 1))
+            };
+            result = await _puzzlesCollection.Aggregate<Puzzle>(pipelineint).FirstOrDefaultAsync();
+            if (result == null)
+            {
+                Console.WriteLine($"No puzzle found for criteria: {criteria} with match: {match}");
+            }
+            return result;
+        }
+        else if(match is string matchString)
+        {
         var pipeline = new BsonDocument[]
         {
-        new BsonDocument("$match", new BsonDocument(criteria, new BsonDocument("$regex", match).Add("$options", "i"))),
+        new BsonDocument("$match", new BsonDocument(criteria, new BsonDocument("$regex", matchString).Add("$options", "i"))),
         new BsonDocument("$sample", new BsonDocument("size", 1))
         };
 
-        var result = await _puzzlesCollection.Aggregate<Puzzle>(pipeline).FirstOrDefaultAsync();
+        result = await _puzzlesCollection.Aggregate<Puzzle>(pipeline).FirstOrDefaultAsync();
         if (result == null)
         {
             Console.WriteLine($"No puzzle found for criteria: {criteria} with match: {match}");
         }
         return result;
+        }
+        else
+        {
+            return result;
+        }
     }
     //overloaded method for if you want to retrieve random by rating, which is an int32.
+    /*
     public async Task<Puzzle?> GetAsyncRandomByCriteria(string criteria, int match)
     {
         var pipeline = new BsonDocument[]
@@ -98,6 +121,7 @@ public class PuzzleService
         }
         return result;
     }
+    */
     public async Task CreateAsync(Puzzle newPuzzle) =>
         await _puzzlesCollection.InsertOneAsync(newPuzzle);
 

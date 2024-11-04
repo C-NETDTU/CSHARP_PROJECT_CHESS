@@ -90,14 +90,20 @@ public class PuzzleController : ControllerBase
         var puzzles = await _puzzleService.GetAsyncThemes(themes);
         if (puzzles == null || !puzzles.Any())
         {
-            _logger.LogCritical($"\n Error in finding puzzles by theme {themes}. Either, no such theme exists, or something went wrong!\n");
+            _logger.LogCritical($"\n Error in finding puzzles by theme {themes}. Either, no such theme exists, or something went wrong!\0");
 
             return NotFound();
         }
-        _logger.LogInformation($"\nFound: {puzzles.Count()} puzzles with themes {themes}\n");
+        _logger.LogInformation($"\nFound: {puzzles.Count()} puzzles with themes {themes}\0");
 
         return Ok(puzzles);
     }
+    /*
+     I think this is the goto way to retrieve puzzles. We can retrieve a random puzzle through the use of query paramters, as such:
+        localhost:<port>/api/puzzle/random?criteria={criteria}&match={match}. An example could be querying for themes, as such:
+        .../random?criteria=Themes&match=discoveredAttack endGame 
+     Please note that if you query by themes, they need to be in alpabetic order.
+     */
     [HttpGet("random")]
     public async Task<ActionResult<Puzzle>> GetRandomByCriteria([FromQuery] string? criteria, [FromQuery] string? match)
     {
@@ -115,14 +121,15 @@ public class PuzzleController : ControllerBase
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogCritical($"\n error: {ex}. Trouble parsin int. Make sure parsed value is int.");
+                        _logger.LogCritical($"\n error: {ex}. Trouble parsin int. Make sure parsed value is int.\0");
                         return BadRequest();
                     }
                 case "FEN":
                     match = Uri.UnescapeDataString(match);
+                    _logger.LogInformation($"\n Decoded: {match}\0"); 
                     return Ok(await _puzzleService.GetAsyncRandomByCriteria(criteria, match));
                 default:
-                    _logger.LogError("\n Escaped switch-case. Criteria possibly non-existant.");
+                    _logger.LogError("\n Escaped switch-case. Criteria possibly non-existant.\0");
                     return BadRequest();
             }
         }
@@ -134,10 +141,10 @@ public class PuzzleController : ControllerBase
     {
         var puzzles = await _puzzleService.GetAsyncRating(rating);
         if (puzzles == null || !puzzles.Any()) {
-            _logger.LogCritical($"\nError in finding puzzles with {rating}. Either no such puzzles exists, or something went wrong!\n");
+            _logger.LogCritical($"\nError in finding puzzles with {rating}. Either no such puzzles exists, or something went wrong!\0");
             return NotFound();
         }
-        _logger.LogInformation($"\nFound: {puzzles.Count()} puzzles with rating {rating}\n");
+        _logger.LogInformation($"\nFound: {puzzles.Count()} puzzles with rating {rating}\0");
         return Ok(puzzles);
     }
 }
