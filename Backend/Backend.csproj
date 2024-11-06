@@ -24,8 +24,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="src\data\network\" />
-    <Folder Include="src\data\repositories\" />
+    <Folder Include="data\repositories\" />
+    <Folder Include="controller\"/>
+    <Folder Include ="services\"/>
   </ItemGroup>
 
 </Project>
