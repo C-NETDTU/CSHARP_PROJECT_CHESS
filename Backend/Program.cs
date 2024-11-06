@@ -43,9 +43,10 @@ namespace MongoDBApi
                 app.UseAuthorization();
                 app.MapControllers();
                 app.Run();
-       
+
             }
-            catch (Exception ex) { 
+            catch (Exception ex)
+            {
                 Console.WriteLine(ex.ToString());
             }
         }
