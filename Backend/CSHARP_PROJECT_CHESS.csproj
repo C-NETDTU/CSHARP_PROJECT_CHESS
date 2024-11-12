@@ -21,10 +21,10 @@
     <PackageReference Include="MongoDB.EntityFrameworkCore" Version="8.1.1" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.9.0" />
   </ItemGroup>
-
   <ItemGroup>
-    <Folder Include="src\data\network\" />
-    <Folder Include="src\data\repositories\" />
+    <ProjectReference Include="..\Shared\Shared.csproj" />
   </ItemGroup>
+
+
 
 </Project>

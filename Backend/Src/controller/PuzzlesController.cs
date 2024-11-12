@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http.HttpResults;
 using System.Net;
 using DnsClient;
+using Shared.DTO;
 
 namespace src.controller;
 
@@ -21,16 +22,21 @@ public class PuzzleController : ControllerBase
         _puzzleService = puzzleService;
     }
 
-    /*
-     * REFRAIN FROM USING THIS METHOD! WE HAVE OVER 4 MIO PUZZLES, THIS WILL TAKE AGES!
-     */
+  
     /// <summary>
-    /// This returns a list of __ALL__ puzzles.
+    /// Method to return a large list of puzzles using paginiation.
     /// </summary>
+    /// <param name="pageNumber"/>
+    /// <param name="pageSize"/>
     /// <returns></returns>
     [HttpGet]
-    public async Task<List<Puzzle>> Get() =>
-        await _puzzleService.GetAsync();
+    public async Task<List<PuzzleDTO>> Get([FromQuery] int pageNumber = 1,[FromQuery] int pageSize = 100)
+    {
+        List<Puzzle> puzzles = await _puzzleService.GetAsync(pageNumber,pageSize);
+        List<PuzzleDTO> PuzzleDTOs = new List<PuzzleDTO>();
+        puzzles.ForEach(T => PuzzleDTOs.Add(new PuzzleDTO(T.Id,T.PuzzleId,T.FEN,T.Moves,T.Rating,T.Themes)));
+        return PuzzleDTOs;
+    }
     /// <summary>
     /// Gets a specific puzzle with matching object id.
     /// </summary>

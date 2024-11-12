@@ -37,12 +37,30 @@ namespace src.data.model
         /// Puzzle rating
         /// </summary>
         [BsonElement("Rating")]
-        public int? Rating { get; set; } = null!;
+        public int Rating { get; set; }
         /// <summary>
         /// Themes present in puzzle
         /// </summary>
         [BsonElement("Themes")]
         public string Themes { get; set; } = string.Empty;
 
+        /// <summary>
+        /// Parameterless constructor for Puzzle class
+        /// </summary>
+        public Puzzle() { }
+
+        /// <summary>
+        /// Parameterized constructor for Puzzle class
+        /// </summary>
+        public Puzzle(string id, string? puzzleId, string? fen, string? moves, int rating, string themes)
+        {
+            Id = id;
+            PuzzleId = puzzleId;
+            FEN = fen;
+            Moves = moves;
+            Rating = rating;
+            Themes = themes;
+        }
     }
+    
 }

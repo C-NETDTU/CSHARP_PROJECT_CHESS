@@ -22,8 +22,13 @@ public class PuzzleService
             PuzzleDatabaseSettings.Value.PuzzleCollectionName);
     }
 
-    public async Task<List<Puzzle>> GetAsync() =>
-        await _puzzlesCollection.Find(_ => true).ToListAsync();
+    public async Task<List<Puzzle>> GetAsync(int pageNumber, int pageSize)
+    {
+        return await _puzzlesCollection.Find(_ => true)
+                                       .Skip((pageNumber - 1) * pageSize)
+                                       .Limit(pageSize)
+                                       .ToListAsync();
+    }
 
     public async Task<Puzzle?> GetAsyncId(string id)
     {
