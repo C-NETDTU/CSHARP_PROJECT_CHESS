@@ -10,10 +10,10 @@ namespace Shared.DTO
 		public string? Themes { get; set; }
 
 
-		/// <summary>
-		/// Parameterless constructor for Puzzle class
-		/// </summary>
-		public PuzzleDTO() { }
+        /// <summary>
+        /// Parameterless constructor for Puzzle class
+        /// </summary>
+        public PuzzleDTO() { }
 
 		/// <summary>
 		/// Parameterized constructor for Puzzle class
@@ -27,5 +27,8 @@ namespace Shared.DTO
 			Rating = rating;
 			Themes = themes;
 		}
-	}
+
+		
+
+    }
 }

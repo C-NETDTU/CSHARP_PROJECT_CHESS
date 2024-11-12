@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using System.Net;
 using DnsClient;
 using Shared.DTO;
+using System.Reflection.PortableExecutable;
 
 namespace src.controller;
 
@@ -30,12 +31,17 @@ public class PuzzleController : ControllerBase
     /// <param name="pageSize"/>
     /// <returns></returns>
     [HttpGet]
-    public async Task<List<PuzzleDTO>> Get([FromQuery] int pageNumber = 1,[FromQuery] int pageSize = 100)
+    public async Task<ActionResult<List<PuzzleDTO>>> Get([FromQuery] int pageNumber = 1,[FromQuery] int pageSize = 100)
     {
         List<Puzzle> puzzles = await _puzzleService.GetAsync(pageNumber,pageSize);
+        if(puzzles is null)
+        {
+            return NotFound();
+        }
         List<PuzzleDTO> PuzzleDTOs = new List<PuzzleDTO>();
         puzzles.ForEach(T => PuzzleDTOs.Add(new PuzzleDTO(T.Id,T.PuzzleId,T.FEN,T.Moves,T.Rating,T.Themes)));
-        return PuzzleDTOs;
+        if (PuzzleDTOs is null) return NotFound();
+        return Ok(PuzzleDTOs);
     }
     /// <summary>
     /// Gets a specific puzzle with matching object id.
@@ -51,8 +57,7 @@ public class PuzzleController : ControllerBase
         {
             return NotFound();
         }
-
-        return Puzzle;
+        return Ok(new PuzzleDTO(Puzzle.Id, Puzzle.PuzzleId, Puzzle.FEN, Puzzle.Moves, Puzzle.Rating, Puzzle.Themes));
     }
 
 
@@ -62,9 +67,10 @@ public class PuzzleController : ControllerBase
     /// <param name="newPuzzle"></param>
     /// <returns></returns>
     [HttpPost]
-    public async Task<IActionResult> Post(Puzzle newPuzzle)
+    public async Task<IActionResult> Post(PuzzleDTO newPuzzle)
     {
-        await _puzzleService.CreateAsync(newPuzzle);
+        Puzzle p = new Puzzle(newPuzzle.Id, newPuzzle.PuzzleId, newPuzzle.FEN, newPuzzle.Moves, newPuzzle.Rating, newPuzzle.Themes);
+        await _puzzleService.CreateAsync(p);
 
         return CreatedAtAction(nameof(Get), new { id = newPuzzle.Id }, newPuzzle);
     }
@@ -75,8 +81,9 @@ public class PuzzleController : ControllerBase
     /// <param name="updatedPuzzle"></param>
     /// <returns></returns>
     [HttpPut("{id:length(24)}")]
-    public async Task<IActionResult> Update(string id, Puzzle updatedPuzzle)
+    public async Task<IActionResult> Update(string id, PuzzleDTO updatedPDTO)
     {
+        Puzzle updatedPuzzle = new Puzzle(updatedPDTO.Id, updatedPDTO.PuzzleId, updatedPDTO.FEN, updatedPDTO.Moves, updatedPDTO.Rating, updatedPDTO.Themes);
         var puzzle = await _puzzleService.GetAsyncId(id);
 
         if (puzzle is null)
@@ -127,8 +134,9 @@ public class PuzzleController : ControllerBase
             return NotFound();
         }
         _logger.LogInformation($"\nFound: {puzzles.Count()} puzzles with themes {themes}\0");
-
-        return Ok(puzzles);
+        List<PuzzleDTO> LPDTO = new List<PuzzleDTO>();
+        puzzles.ForEach(t => LPDTO.Add(new PuzzleDTO(t.Id, t.PuzzleId, t.FEN, t.Moves, t.Rating, t.Themes)));
+        return Ok(LPDTO);
     }
     /// <summary>
     /// This retrieves a random puzzle with matching criteria and match. Should be able to accept any type.
@@ -144,12 +152,14 @@ public class PuzzleController : ControllerBase
             switch (criteria)
             {
                 case "Themes":
-                    return Ok(await _puzzleService.GetAsyncRandomByCriteria(criteria, match));
+                    Puzzle p = await _puzzleService.GetAsyncRandomByCriteria(criteria, match);
+                    return Ok(new PuzzleDTO(p.Id,p.PuzzleId,p.FEN,p.Moves,p.Rating,p.Themes));
                 case "Rating":
                     try
                     {
                         Int32.TryParse(match, out int matchInt);
-                        return Ok(await _puzzleService.GetAsyncRandomByCriteria(criteria, matchInt));
+                        Puzzle pint = await _puzzleService.GetAsyncRandomByCriteria(criteria, matchInt);
+                        return Ok(new PuzzleDTO(pint.Id, pint.PuzzleId, pint.FEN, pint.Moves, pint.Rating, pint.Themes));
                     }
                     catch (Exception ex)
                     {
@@ -158,8 +168,9 @@ public class PuzzleController : ControllerBase
                     }
                 case "FEN":
                     match = Uri.UnescapeDataString(match);
-                    _logger.LogInformation($"\n Decoded: {match}\0"); 
-                    return Ok(await _puzzleService.GetAsyncRandomByCriteria(criteria, match));
+                    _logger.LogInformation($"\n Decoded: {match}\0");
+                    Puzzle pfen = await _puzzleService.GetAsyncRandomByCriteria(criteria, match);
+                    return Ok(new PuzzleDTO(pfen.Id, pfen.PuzzleId, pfen.FEN, pfen.Moves, pfen.Rating, pfen.Themes));
                 default:
                     _logger.LogError("\n Escaped switch-case. Criteria possibly non-existant.\0");
                     return BadRequest();
@@ -181,6 +192,8 @@ public class PuzzleController : ControllerBase
             return NotFound();
         }
         _logger.LogInformation($"\nFound: {puzzles.Count()} puzzles with rating {rating}\0");
-        return Ok(puzzles);
+        List<PuzzleDTO> LPDTO = new List<PuzzleDTO>();
+        puzzles.ForEach(t => LPDTO.Add(new PuzzleDTO(t.Id, t.PuzzleId, t.FEN, t.Moves, t.Rating, t.Themes)));
+        return Ok(LPDTO);
     }
 }
