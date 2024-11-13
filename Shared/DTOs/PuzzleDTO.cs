@@ -11,12 +11,12 @@ namespace Shared.DTO
 
 
         /// <summary>
-        /// Parameterless constructor for Puzzle class
+        /// Parameterless constructor for PuzzleDTO class
         /// </summary>
         public PuzzleDTO() { }
 
 		/// <summary>
-		/// Parameterized constructor for Puzzle class
+		/// Parameterized constructor for PuzzleDTO class
 		/// </summary>
 		public PuzzleDTO(string id, string? puzzleId, string? fen, string? moves, int rating, string themes)
 		{

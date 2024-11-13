@@ -1,7 +1,7 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using System.Text.Json;
-using ThirdParty.Json.LitJson;
+using System.Text.Json.Serialization;
 
 namespace src.data.model
 {
@@ -15,6 +15,7 @@ namespace src.data.model
         /// </summary>
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
+        [JsonPropertyName("_id")]
         public string Id { get; set; } = string.Empty!;
 
         /// <summary>

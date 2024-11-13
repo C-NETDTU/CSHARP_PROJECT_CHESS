@@ -5,7 +5,7 @@ using System.Linq;
 using MongoDB.Bson;
 namespace src.services;
 
-public class PuzzleService
+public class PuzzleService : IPuzzleService
 {
     private readonly IMongoCollection<Puzzle>? _puzzlesCollection;
     public PuzzleService(
