@@ -3,7 +3,7 @@ using Xunit;
 using Frontend.Model.ChessBoard;
 using Frontend.Model.ChessPiece;
 using Frontend.Model.ChessMove;
-using Frontend.Model.Game;
+using Frontend.Controller.GameManager;
 
 public class GameManagerTests
 {
