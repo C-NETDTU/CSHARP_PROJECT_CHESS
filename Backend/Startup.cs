@@ -1,9 +1,12 @@
-﻿public class Startup
+﻿using src.services;
+
+public class Startup
 {
     public void ConfigureServices(IServiceCollection services)
     {
         services.AddControllers();
-        services.AddLogging(); 
+        services.AddLogging();
+        services.AddTransient<IPuzzleService, PuzzleService>();
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILogger<Startup> logger)

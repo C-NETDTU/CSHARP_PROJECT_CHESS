@@ -13,11 +13,11 @@ namespace src.controller;
 [Route("api/[controller]")]
 public class PuzzleController : ControllerBase
 {
-    private readonly PuzzleService _puzzleService;
+    private readonly IPuzzleService _puzzleService;
     private readonly ILogger<PuzzleController> _logger;
 
 
-    public PuzzleController(ILogger<PuzzleController> logger, PuzzleService puzzleService)
+    public PuzzleController(ILogger<PuzzleController> logger, IPuzzleService puzzleService)
     {
         _logger = logger;
         _puzzleService = puzzleService;
