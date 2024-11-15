@@ -11,11 +11,17 @@ namespace Frontend.Model.Game
     public class GameManager
     {
         public ChessGame chessGame { get; private set; }
+
+        private Queue<BoardMove>? solutionMoves;
         public Stack<Board> gameHistory { get; private set; }
 
         public Board CurrentBoard { get; private set; }
 
         public Set CurrentTurn => CurrentBoard.Turn;
+
+        public event Action<bool>? OnPuzzleCompleted;
+        public event Action<BoardMove>? OnMovePerformed;
+        public event Action? OnUserTurn;
 
         //This constructor will make a chessGame with the initial board position
         public GameManager()
@@ -27,12 +33,66 @@ namespace Frontend.Model.Game
 
         }
 
-        //TODO: We need a alternative constructor that makes a game from custom position
-        public GameManager(string fen, AppliedMove? lastMove = null, Set? turn = Set.White)
+        public GameManager(string fen)
         {
             chessGame = new ChessGame(fen);
             gameHistory = new Stack<Board>();
-            CurrentBoard = new Board(FenToDictionary(fen), lastMove, turn);
+            var (pieces, turn) = FenToDictionary(fen);
+            CurrentBoard = new Board(pieces, turn);
+        }
+
+        //TODO: We need a alternative constructor that makes a game from custom position
+        public GameManager(string fen, List<string> solutionMoves)
+        {
+            chessGame = new ChessGame(fen);
+            gameHistory = new Stack<Board>();
+
+            var (pieces, turn) = FenToDictionary(fen);
+            CurrentBoard = new Board(pieces, turn);
+
+            this.solutionMoves = ParseSolutionMoves(solutionMoves);
+
+            PerformNextMove();
+        }
+
+        public void PerformNextMove()
+        {
+            if (solutionMoves != null && solutionMoves.Count > 0)
+            {
+                var nextMove = solutionMoves.Dequeue();
+                ApplyMove(nextMove);
+
+                OnMovePerformed?.Invoke(nextMove); // Here we notify the UI that a move has been performed by the GameManager
+
+                OnUserTurn?.Invoke(); // Here we notify the UI that it is the user's turn to make a move    
+            }
+        }
+
+        public void OnUserMove(BoardMove userMove)
+        {
+            if (solutionMoves == null || solutionMoves.Count == 0)
+            {
+                throw new InvalidOperationException("No solution moves available.");
+            }
+            var expectedMove = solutionMoves.Peek();
+            if (userMove.Equals(expectedMove))
+            {
+                ApplyMove(userMove);
+                solutionMoves.Dequeue();
+
+                if (solutionMoves.Count > 0)
+                {
+                    PerformNextMove();
+                }
+                else
+                {
+                    OnPuzzleCompleted?.Invoke(true); // Here we notify the UI that the puzzle was completed successfully
+                }
+            }
+            else
+            {
+                OnPuzzleCompleted?.Invoke(false); // Here we notify the UI that the puzzle was completed unsuccessfully
+            }
         }
 
         public List<BoardMove> GetLegalMoves(ChessPosition customPosition)
@@ -58,6 +118,9 @@ namespace Frontend.Model.Game
             MoveType type = chessGame.MakeMove(chessMove, true);
             var newBoard = move.ApplyOn(CurrentBoard);
             newBoard.LastMove = new AppliedMove(move);
+
+            Console.WriteLine($"ApplyMove: Move applied - {move}. Turn before push: {newBoard.Turn}");
+
             gameHistory.Push(newBoard);
             CurrentBoard = gameHistory.Peek();
         }
@@ -73,6 +136,72 @@ namespace Frontend.Model.Game
             var chessDotNetMove = new ChessDotNet.Move(from, to, player, promotionChar);
 
             return chessDotNetMove;
+        }
+
+        private Queue<BoardMove> ParseSolutionMoves(List<string> solutionMoves)
+        {
+            Queue<BoardMove> parsedMoves = new();
+            foreach (var move in solutionMoves)
+            {
+                var boardMove = ConvertSolutionMoveToBoardMove(move);
+                parsedMoves.Enqueue(boardMove);
+            }
+            return parsedMoves;
+        }
+
+        private BoardMove ConvertSolutionMoveToBoardMove(string move)
+        {
+            if (move.Length != 4)
+            {
+                throw new ArgumentException("Invalid move string");
+            }
+
+            string fromPositon = move.Substring(0, 2);
+            string toPosition = move.Substring(2, 2);
+
+            var from = PositionMethods.FromString(fromPositon[0].ToString(), fromPositon[1].ToString());
+            var to = PositionMethods.FromString(toPosition[0].ToString(), toPosition[1].ToString());
+
+            var piece = CurrentBoard.Pieces[from];
+
+            IPrimaryMove primaryMove = new ChessMove.Move(piece, from, to);
+            IPreMove? preMove = null;
+            IConsequence? consequence = null;
+
+            if (piece is ChessPiece.King && Math.Abs(from.GetFile() - to.GetFile()) == 2)
+            {
+                primaryMove = to.GetFile() > from.GetFile()
+                    ? new KingSideCastle(piece, from, to)
+                    : new QueenSideCastle(piece, from, to);
+            }
+            else if (piece is ChessPiece.Pawn && (to.GetRank() == 1 || to.GetRank() == 8))
+            {
+                consequence = new Promotion(new ChessPiece.Queen(piece.Set), to);
+            }
+            else if (piece is ChessPiece.Pawn)
+            {
+                if (Math.Abs(to.GetFile() - from.GetFile()) == 1 && CurrentBoard[to].IsEmpty)
+                {
+                    var enPassantPosition = PositionMethods.From(to.GetFile(), from.GetRank());
+                    var capturedPiece = CurrentBoard[enPassantPosition].Piece;
+
+                    if (capturedPiece is ChessPiece.Pawn && capturedPiece.Set != piece.Set)
+                    {
+                        preMove = new Capture(piece, enPassantPosition);
+                    }
+                }
+                else if (CurrentBoard[to].IsNotEmpty)
+                {
+                    preMove = new Capture(piece, to);
+                }
+            }
+            else if (CurrentBoard[to].IsNotEmpty)
+            {
+                preMove = new Capture(piece, to);
+            }
+            string sanNotation = $"{from}{to}";
+
+            return new BoardMove(primaryMove, preMove, consequence, sanNotation);
         }
 
         private BoardMove ConvertToBoardMove(ChessDotNet.Move chessMove)
@@ -157,10 +286,13 @@ namespace Frontend.Model.Game
             }
         }
 
-        public static Dictionary<ChessPosition, IPiece> FenToDictionary(string fen)
+        public static (Dictionary<ChessPosition, IPiece> pieces, Set turn) FenToDictionary(string fen)
         {
             var pieces = new Dictionary<ChessPosition, IPiece>();
-            var ranks = fen.Split(' ')[0].Split('/');
+            var fenParts = fen.Split(' ');
+
+            var ranks = fenParts[0].Split('/');
+            Set turn = fenParts[1] == "w" ? Set.White : Set.Black; // Determine the turn from FEN
 
             for (int i = 0; i < ranks.Length; i++)
             {
@@ -177,13 +309,23 @@ namespace Frontend.Model.Game
                         var piece = CreatePieceFromFenSymbol(symbol);
                         var position = PositionMethods.From(file, 8 - i);
                         pieces[position] = piece;
-                        //System.Console.WriteLine($"Added {piece.GetType().Name} at {position}");
                         file++;
                     }
                 }
             }
 
-            return pieces;
+            return (pieces, turn);
+        }
+
+
+        public static Set GetTurnFromFen(string fen)
+        {
+            var parts = fen.Split(' ');
+            if (parts.Length > 1)
+            {
+                return parts[1] == "w" ? Set.White : Set.Black;
+            }
+            throw new ArgumentException("Invalid FEN string");
         }
 
         private static IPiece CreatePieceFromFenSymbol(char symbol)

@@ -41,11 +41,23 @@ namespace Frontend.Model.ChessBoard
         }
 
         // Get the Position from file and rank integers
-       public static Position From(int file, int rank)
+        public static Position From(int file, int rank)
         {
             ValidateFileAndRank(file, rank);
             var position = (Position)((file - 1) * 8 + (rank - 1));
             return position;
+        }
+
+        public static Position FromString(string file, string rank)
+        {
+            if (file.Length != 1 || rank.Length != 1)
+                throw new ArgumentException("File and rank must be single characters.");
+
+            int fileIndex = file[0] - 'a' + 1;
+            int rankIndex = rank[0] - '1' + 1;
+
+            Console.WriteLine($"Converting {file}{rank} to fileIndex={fileIndex}, rankIndex={rankIndex}");
+            return From(fileIndex, rankIndex);
         }
 
         // Check if position is a light square
@@ -59,12 +71,12 @@ namespace Frontend.Model.ChessBoard
         {
             return ((int)position / 8 + (int)position % 8) % 2 == 1;
         }
-        
+
         // Private helper method to validate the file and rank
         private static void ValidateFileAndRank(int file, int rank)
         {
-        if (file < 1 || file > 8 || rank < 1 || rank > 8)
-            throw new ArgumentOutOfRangeException("File and rank must be between 1 and 8.");
+            if (file < 1 || file > 8 || rank < 1 || rank > 8)
+                throw new ArgumentOutOfRangeException("File and rank must be between 1 and 8.");
         }
 
         public static string ToString(this Position position)

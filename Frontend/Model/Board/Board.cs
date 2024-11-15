@@ -19,7 +19,7 @@ namespace Frontend.Model.ChessBoard
         public Board() : this(InitialPieces) { }
 
         // This constructor initializes the board with the given pieces
-        public Board(Dictionary<Position, IPiece> pieces, AppliedMove? lastMove = null, Set? turn = Set.White)
+        public Board(Dictionary<Position, IPiece> pieces, Set? turn = Set.White)
         {
             Pieces = new Dictionary<Position, IPiece>(pieces);
             Squares = Enum.GetValues(typeof(Position))
