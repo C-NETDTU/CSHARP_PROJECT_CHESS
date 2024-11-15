@@ -1,13 +1,17 @@
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Frontend.Model.Game;
+using Frontend.Model.ChessBoard;
+using Frontend.Model.ChessMove;
+using Frontend.Model.ChessPiece;
+using Shared.DTO;
 
-namespace Frontend.Model.Game
+namespace Frontend.Controller
 {
     public class PuzzleManager
     {
         private GameManager? gameManager;
+        private ApiManager? apiManager = new ApiManager();
         public Queue<Puzzle> puzzleQueue;
         public int strikes;
         private int maxStrikes = 3;
@@ -18,7 +22,6 @@ namespace Frontend.Model.Game
         public event Action<bool>? OnPuzzleCompleted;
 
         public event Action? OnNewPuzzleLoaded;
-
 
         public PuzzleManager()
         {
@@ -43,6 +46,7 @@ namespace Frontend.Model.Game
 
         public async Task FetchPuzzleAsync()
         {
+
             var puzzles = await FetchPuzzlesFromAPI();
             foreach (var puzzle in puzzles)
             {
@@ -50,11 +54,19 @@ namespace Frontend.Model.Game
             }
             await LoadNextPuzzle();
         }
+        private Puzzle ParseToPuzzleFromDTO(PuzzleDTO puzzleDTO)
+        { 
+            return new Puzzle(puzzleDTO.FEN, puzzleDTO.Moves);
+        }
+
 
         private async Task<List<Puzzle>> FetchPuzzlesFromAPI()
         {
-            return await Task.Run(() => new List<Puzzle>());
+            var tasks = Enumerable.Range(0, 10).Select(_ => apiManager.RetrieveRandomPuzzle());
+            var puzzleDTOs = await Task.WhenAll(tasks);
+            return puzzleDTOs.Select(ParseToPuzzleFromDTO).ToList();
         }
+
 
         private async Task LoadNextPuzzle()
         {

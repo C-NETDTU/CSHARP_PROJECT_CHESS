@@ -6,7 +6,7 @@ using Frontend.Model.ChessPiece;
 using System.Collections.Generic;
 using ChessPosition = Frontend.Model.ChessBoard.Position;
 
-namespace Frontend.Model.Game
+namespace Frontend.Controller
 {
     public class GameManager
     {
@@ -164,28 +164,28 @@ namespace Frontend.Model.Game
 
             var piece = CurrentBoard.Pieces[from];
 
-            IPrimaryMove primaryMove = new ChessMove.Move(piece, from, to);
+            IPrimaryMove primaryMove = new Model.ChessMove.Move(piece, from, to);
             IPreMove? preMove = null;
             IConsequence? consequence = null;
 
-            if (piece is ChessPiece.King && Math.Abs(from.GetFile() - to.GetFile()) == 2)
+            if (piece is Model.ChessPiece.King && Math.Abs(from.GetFile() - to.GetFile()) == 2)
             {
                 primaryMove = to.GetFile() > from.GetFile()
                     ? new KingSideCastle(piece, from, to)
                     : new QueenSideCastle(piece, from, to);
             }
-            else if (piece is ChessPiece.Pawn && (to.GetRank() == 1 || to.GetRank() == 8))
+            else if (piece is Model.ChessPiece.Pawn && (to.GetRank() == 1 || to.GetRank() == 8))
             {
-                consequence = new Promotion(new ChessPiece.Queen(piece.Set), to);
+                consequence = new Promotion(new Model.ChessPiece.Queen(piece.Set), to);
             }
-            else if (piece is ChessPiece.Pawn)
+            else if (piece is Model.ChessPiece.Pawn)
             {
                 if (Math.Abs(to.GetFile() - from.GetFile()) == 1 && CurrentBoard[to].IsEmpty)
                 {
                     var enPassantPosition = PositionMethods.From(to.GetFile(), from.GetRank());
                     var capturedPiece = CurrentBoard[enPassantPosition].Piece;
 
-                    if (capturedPiece is ChessPiece.Pawn && capturedPiece.Set != piece.Set)
+                    if (capturedPiece is Model.ChessPiece.Pawn && capturedPiece.Set != piece.Set)
                     {
                         preMove = new Capture(piece, enPassantPosition);
                     }
@@ -210,11 +210,11 @@ namespace Frontend.Model.Game
             var to = FromChessDotNetPosition(chessMove.NewPosition);
             var piece = CurrentBoard.Pieces[from];
 
-            IPrimaryMove primaryMove = new ChessMove.Move(piece, from, to);
+            IPrimaryMove primaryMove = new Model.ChessMove.Move(piece, from, to);
             IPreMove? preMove = null;
             IConsequence? consequence = null;
 
-            if (piece is ChessPiece.King && Math.Abs(chessMove.OriginalPosition.File - chessMove.NewPosition.File) == 2)
+            if (piece is Model.ChessPiece.King && Math.Abs(chessMove.OriginalPosition.File - chessMove.NewPosition.File) == 2)
             {
                 if (chessMove.NewPosition.File == ChessDotNet.File.G)
                 {
@@ -225,7 +225,7 @@ namespace Frontend.Model.Game
                     primaryMove = new QueenSideCastle(piece, from, to);
                 }
             }
-            else if (piece is ChessPiece.Pawn && (chessMove.NewPosition.Rank == 1 || chessMove.NewPosition.Rank == 8))
+            else if (piece is Model.ChessPiece.Pawn && (chessMove.NewPosition.Rank == 1 || chessMove.NewPosition.Rank == 8))
             {
                 if (chessMove.Promotion.HasValue)
                 {
@@ -234,14 +234,14 @@ namespace Frontend.Model.Game
                     System.Console.WriteLine("The promotion piece is: " + consequence.Piece.GetType());
                 }
             }
-            else if (piece is ChessPiece.Pawn)
+            else if (piece is Model.ChessPiece.Pawn)
             {
                 if (Math.Abs(to.GetFile() - from.GetFile()) == 1 && CurrentBoard[to].IsEmpty)
                 {
                     var enPassantPosition = PositionMethods.From(to.GetFile(), from.GetRank());
                     var capturedPiece = CurrentBoard[enPassantPosition].Piece;
 
-                    if (capturedPiece is ChessPiece.Pawn && capturedPiece.Set != piece.Set)
+                    if (capturedPiece is Model.ChessPiece.Pawn && capturedPiece.Set != piece.Set)
                     {
                         preMove = new Capture(piece, enPassantPosition);
                     }
@@ -274,13 +274,13 @@ namespace Frontend.Model.Game
             switch (promotionPieceChar)
             {
                 case 'Q':
-                    return new ChessPiece.Queen(pieceSet);
+                    return new Model.ChessPiece.Queen(pieceSet);
                 case 'R':
-                    return new ChessPiece.Rook(pieceSet);
+                    return new Model.ChessPiece.Rook(pieceSet);
                 case 'B':
-                    return new ChessPiece.Bishop(pieceSet);
+                    return new Model.ChessPiece.Bishop(pieceSet);
                 case 'N':
-                    return new ChessPiece.Knight(pieceSet);
+                    return new Model.ChessPiece.Knight(pieceSet);
                 default:
                     throw new ArgumentException($"Invalid promotion piece: {promotionPieceChar}");
             }
@@ -335,12 +335,12 @@ namespace Frontend.Model.Game
 
             return symbol.ToString().ToLower() switch
             {
-                "p" => new ChessPiece.Pawn(set),
-                "r" => new ChessPiece.Rook(set),
-                "n" => new ChessPiece.Knight(set),
-                "b" => new ChessPiece.Bishop(set),
-                "q" => new ChessPiece.Queen(set),
-                "k" => new ChessPiece.King(set),
+                "p" => new Model.ChessPiece.Pawn(set),
+                "r" => new Model.ChessPiece.Rook(set),
+                "n" => new Model.ChessPiece.Knight(set),
+                "b" => new Model.ChessPiece.Bishop(set),
+                "q" => new Model.ChessPiece.Queen(set),
+                "k" => new Model.ChessPiece.King(set),
                 _ => throw new ArgumentException($"Invalid FEN symbol: {symbol}")
             };
         }
