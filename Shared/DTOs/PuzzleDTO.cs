@@ -1,13 +1,21 @@
+using System.Text.Json.Serialization;
+
 namespace Shared.DTO
 {
 	public class PuzzleDTO
 	{
+		[JsonPropertyName("id")]
 		public string? Id {  get; set; }
+		[JsonPropertyName("puzzleId")]
 		public string? PuzzleId { get; set; }
+		[JsonPropertyName("fen")]
 		public string? FEN { get; set; }
-		public int Rating { get; set; }
+		[JsonPropertyName("moves")]
 		public string? Moves { get; set; }
-		public string? Themes { get; set; }
+		[JsonPropertyName("rating")]
+        public int Rating { get; set; }
+		[JsonPropertyName("themes")]
+        public string? Themes { get; set; }
 
 
         /// <summary>

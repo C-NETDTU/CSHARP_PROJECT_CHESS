@@ -17,16 +17,16 @@ namespace Frontend.Controller
         //TODO: Implement more dynamic way to change IP address.
         private readonly String path = "localhost:52474";
 
-        public ApiManager()
+        public ApiManager(HttpClient httpClient)
         {
-            _client = new HttpClient();
+            _client = httpClient;
         }
 
         public async Task<PuzzleDTO> RetrieveRandomPuzzle()
         {
 
-            PuzzleDTO product = new PuzzleDTO();
-            HttpResponseMessage response = await _client.GetAsync($"{path}/random");
+            PuzzleDTO? product = new PuzzleDTO();
+            HttpResponseMessage response = await _client.GetAsync("api/puzzle/random");
             if (response.IsSuccessStatusCode)
             {
                 product = await response.Content.ReadFromJsonAsync<PuzzleDTO>();
@@ -36,7 +36,7 @@ namespace Frontend.Controller
         public async Task<PuzzleDTO> RetrieveRandomPuzzleWithCriteria(string criteria, string match)
         {
             PuzzleDTO product = new PuzzleDTO();
-            HttpResponseMessage response = await _client.GetAsync($"{path}/random?criteria={criteria}&match={match}");
+            HttpResponseMessage response = await _client.GetAsync("api/puzzle/random?criteria={criteria}&match={match}");
             if (response.IsSuccessStatusCode)
             {
                 product = await response.Content.ReadFromJsonAsync<PuzzleDTO>();

@@ -10,8 +10,13 @@ namespace Frontend.Controller
 {
     public class PuzzleManager
     {
+        private readonly HttpClient _httpClient = new HttpClient(new HttpClientHandler())
+        {
+            BaseAddress = new Uri("http://localhost:52474")
+        };
+
         private GameManager? gameManager;
-        private ApiManager? apiManager = new ApiManager();
+        private ApiManager? apiManager;
         public Queue<Puzzle> puzzleQueue;
         public int strikes;
         private int maxStrikes = 3;
@@ -25,6 +30,7 @@ namespace Frontend.Controller
 
         public PuzzleManager()
         {
+            apiManager = new ApiManager(_httpClient);
             puzzleQueue = new Queue<Puzzle>();
             score = 0;
             strikes = 0;
