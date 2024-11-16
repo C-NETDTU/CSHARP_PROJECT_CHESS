@@ -33,7 +33,6 @@ namespace Frontend.Tests.ControllerTest
                 }
                     )
             };
-            //httpMessageHandlerMock.Protected().Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<PuzzleDTO>()).ReturnsAsync(httpResponseMessage);
             httpMessageHandlerMock
                 .Protected()
                 .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
