@@ -1,0 +1,16 @@
+@page "/chess"
+@using Frontend.Model.ChessBoard
+@inject Frontend.Controller.GameManager GameManager
+
+<h3>Chess Puzzle</h3>
+<p>Turn: @GameManager.CurrentTurn</p>
+
+<Chessboard />
+
+@code {
+    protected override void OnInitialized()
+    {
+        // Initialize the GameManager with the default board setup
+        GameManager = new Frontend.Controller.GameManager();
+    }
+}
