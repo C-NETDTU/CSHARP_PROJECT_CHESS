@@ -4,6 +4,7 @@ using MongoDB.Driver;
 using System.Linq;
 using MongoDB.Bson;
 using backend.src.repository;
+using Shared.DTO;
 namespace src.services;
 
 public class PuzzleService : IPuzzleService
@@ -14,34 +15,44 @@ public class PuzzleService : IPuzzleService
         _puzzleRepository = puzzleRepository;
     }
 
-    public async Task<List<Puzzle>> GetAsync(int pageNumber, int pageSize)
+    public async Task<List<PuzzleDTO>> GetAsync(int pageNumber, int pageSize)
     {
         var puzzles = await _puzzleRepository.GetAllAsync();
-        
-        return puzzles
+
+        List<PuzzleDTO> PuzzleDTOs = puzzles.Select(p => new PuzzleDTO(p.Id, p.PuzzleId, p.FEN, p.Moves, p.Rating, p.Themes)).ToList();
+
+        return PuzzleDTOs
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
             .ToList();
+
     }
 
-    public async Task<Puzzle?> GetAsyncId(string id)
+    public async Task<PuzzleDTO> GetAsyncId(string id)
     {
-        var puzzle = await _puzzleRepository.GetByIdAsync(id);
-        return puzzle;
+        var result = await _puzzleRepository.GetByIdAsync(id);
+        PuzzleDTO pDTO = new PuzzleDTO(result.Id,result.PuzzleId,result.FEN,result.Moves,result.Rating,result.Themes);
+        return pDTO;
 
     }
    
-    public async Task<List<Puzzle>?> GetAsyncThemes(string themes)
+    public async Task<List<PuzzleDTO>?> GetAsyncThemes(string themes)
     {
-        return (await _puzzleRepository.GetByThemeAsync(themes)).ToList();
+        var result = (await _puzzleRepository.GetByThemeAsync(themes)).ToList();
+        List<PuzzleDTO> pDTO = new List<PuzzleDTO>();
+        result.ForEach(p => pDTO.Add(new PuzzleDTO(p.Id, p.PuzzleId, p.FEN, p.Moves, p.Rating, p.Themes)));
+        return pDTO;
     }
     
-    public async Task<List<Puzzle>?> GetAsyncRating(Int32 rating)
+    public async Task<List<PuzzleDTO>?> GetAsyncRating(Int32 rating)
     {
-        return (await _puzzleRepository.GetByRatingAsync(rating)).ToList();
+        var result = (await _puzzleRepository.GetByRatingAsync(rating)).ToList();
+        List<PuzzleDTO> pDTO = new List<PuzzleDTO>();
+        result.ForEach(p => pDTO.Add(new PuzzleDTO(p.Id,p.PuzzleId,p.FEN,p.Moves,p.Rating,p.Themes)));
+        return pDTO;
     }
 
-    public async Task<Puzzle?> GetAsyncRandom()
+    public async Task<PuzzleDTO?> GetAsyncRandom()
     {
         /*var pipeline = new BsonDocument[]
     {
@@ -50,11 +61,14 @@ public class PuzzleService : IPuzzleService
 
         var result = await _puzzlesCollection.Aggregate<Puzzle>(pipeline).FirstOrDefaultAsync();
         return result;*/
-        return await _puzzleRepository.GetRandomAsync();
+        var result = await _puzzleRepository.GetRandomAsync();
+        return new PuzzleDTO(result.Id, result.PuzzleId, result.FEN, result.Moves, result.Rating, result.Themes);
     }
-    public async Task<Puzzle?> GetAsyncRandomByCriteria<T>(string criteria, T match)
+    public async Task<PuzzleDTO?> GetAsyncRandomByCriteria<T>(string criteria, T match)
     {
-        return await _puzzleRepository.GetRandomByCriteriaAsync<T>(criteria, match);
+        var result = await _puzzleRepository.GetRandomByCriteriaAsync<T>(criteria, match);
+        PuzzleDTO pDTO = new PuzzleDTO(result.Id, result.PuzzleId, result.FEN, result.Moves, result.Rating, result.Themes);
+        return pDTO;
   
     }
     public async Task CreateAsync(Puzzle newPuzzle) =>

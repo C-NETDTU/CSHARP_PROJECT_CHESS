@@ -33,7 +33,7 @@ public class PuzzleController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<List<PuzzleDTO>>> Get([FromQuery] int pageNumber = 1,[FromQuery] int pageSize = 100)
     {
-        List<Puzzle> puzzles = await _puzzleService.GetAsync(pageNumber,pageSize);
+        List<PuzzleDTO> puzzles = await _puzzleService.GetAsync(pageNumber,pageSize);
         if(puzzles is null)
         {
             return NotFound();
@@ -121,7 +121,7 @@ public class PuzzleController : ControllerBase
     /// <param name="themes"></param>
     /// <returns></returns>
     [HttpGet("themes")]
-    public async Task<ActionResult<List<Puzzle>>> GetThemes([FromQuery] string themes)
+    public async Task<ActionResult<List<PuzzleDTO>>> GetThemes([FromQuery] string themes)
     {
         var puzzles = await _puzzleService.GetAsyncThemes(themes);
         if (puzzles == null || !puzzles.Any())
@@ -140,20 +140,20 @@ public class PuzzleController : ControllerBase
     /// <param name="match"></param>
     /// <returns></returns>
     [HttpGet("random")]
-    public async Task<ActionResult<Puzzle>> GetRandomByCriteria([FromQuery] string? criteria, [FromQuery] string? match)
+    public async Task<ActionResult<PuzzleDTO>> GetRandomByCriteria([FromQuery] string? criteria, [FromQuery] string? match)
     {
         if (criteria != null && match != null)
         {
             switch (criteria)
             {
                 case "Themes":
-                    Puzzle p = await _puzzleService.GetAsyncRandomByCriteria(criteria, match);
+                    PuzzleDTO p = await _puzzleService.GetAsyncRandomByCriteria(criteria, match);
                     return Ok(p);
                 case "Rating":
                     try
                     {
                         Int32.TryParse(match, out int matchInt);
-                        Puzzle pint = await _puzzleService.GetAsyncRandomByCriteria(criteria, matchInt);
+                        PuzzleDTO pint = await _puzzleService.GetAsyncRandomByCriteria(criteria, matchInt);
                         return Ok(pint);
                     }
                     catch (Exception ex)
@@ -164,7 +164,7 @@ public class PuzzleController : ControllerBase
                 case "FEN":
                     match = Uri.UnescapeDataString(match);
                     _logger.LogInformation($"\n Decoded: {match}\0");
-                    Puzzle pfen = await _puzzleService.GetAsyncRandomByCriteria(criteria, match);
+                    PuzzleDTO pfen = await _puzzleService.GetAsyncRandomByCriteria(criteria, match);
                     return Ok(pfen);
                 default:
                     _logger.LogError("\n Escaped switch-case. Criteria possibly non-existant.\0");
@@ -179,7 +179,7 @@ public class PuzzleController : ControllerBase
     /// <param name="rating"></param>
     /// <returns></returns>
     [HttpGet("rating")]
-    public async Task<ActionResult<List<Puzzle>>> GetRating([FromQuery] Int32 rating)
+    public async Task<ActionResult<List<PuzzleDTO>>> GetRating([FromQuery] Int32 rating)
     {
         var puzzles = await _puzzleService.GetAsyncRating(rating);
         if (puzzles == null || !puzzles.Any()) {
