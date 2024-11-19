@@ -1,0 +1,16 @@
+@* Chessboard.razor *@
+
+@page "/chessboard"
+
+<div style="display: grid; grid-template-rows: repeat(8, 1fr); grid-template-columns: repeat(8, 1fr); width: 900px; height: 900px;">
+    @for (var row = 0; row < 8; row++)
+    {
+        for (var col = 0; col < 8; col++)
+        {
+            <div style="background-color:@((row + col) % 2 == 0 ? "white" : "black"); border: 1px solid gray;"></div>
+        }
+    }
+</div>
+
+<img src="images/bishop_dark.svg" alt="Bishop Dark" style="width:100px;height:100px;" />
+
