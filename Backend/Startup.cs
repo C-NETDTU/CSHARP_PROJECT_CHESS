@@ -40,7 +40,15 @@ public class Startup
         });
 
         // Register Repositories and Services
-        services.AddScoped<IMongoRepository<Puzzle>, MongoRepository<Puzzle>>();
+        services.AddScoped<IMongoRepository<Puzzle>>(sp =>
+        {
+            //Just passing this shit directly in. It wouldn't work dynamically, and after having tinkered with it for  along time...
+            //It's a "temporary" fix.
+            var database = sp.GetRequiredService<IMongoDatabase>();
+            var collectionName = "puzzles";
+            return new MongoRepository<Puzzle>(database, collectionName);
+        });
+
         services.AddScoped<IPuzzleRepository, PuzzleRepository>();
         services.AddScoped<IPuzzleService, PuzzleService>();
 
