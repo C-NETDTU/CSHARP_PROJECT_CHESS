@@ -1,16 +1,186 @@
 @* Chessboard.razor *@
 
-@page "/chessboard"
+@page "/Chessboard"
 
+
+@*
 <div style="display: grid; grid-template-rows: repeat(8, 1fr); grid-template-columns: repeat(8, 1fr); width: 900px; height: 900px;">
     @for (var row = 0; row < 8; row++)
     {
         for (var col = 0; col < 8; col++)
         {
-            <div style="background-color:@((row + col) % 2 == 0 ? "white" : "black"); border: 1px solid gray;"></div>
+            <div style="background-color:@((row + col) % 2 == 0 ? "white" : "dark"); border: 1px solid gray;"></div>
         }
+    }
+
+
+</div>
+*@
+
+<div class="chessboard">
+    @for (int row = 0; row < 8; row++)
+    {
+        <div class="row" style="display: flex;">
+            @for (int col = 0; col < 8; col++)
+            {
+                var square = board[row, col];
+                <div class="square" style="background-color: @square.Color; display: flex; justify-content: center; align-items: center; width: 100px; height: 100px; border: 2px solid gray;">
+                    @if (square.Piece != null)
+                    {
+                        <img src="images/@square.Piece" class="piece" style="width: 90px; height: 90px;" alt="@GetPieceAltText(square.Piece)" object-fit:contain/>
+                    }
+                </div>
+            }
+        </div>
     }
 </div>
 
-<img src="images/bishop_dark.svg" alt="Bishop Dark" style="width:100px;height:100px;" />
+@code {
 
+    // Represents a square on the chessboard
+    public class Square
+    {
+        public string Color { get; set; }  // "black" or "white"
+        public string Piece { get; set; }  // Can be null or piece's image path
+    }
+
+    // The chessboard itself (an 8x8 grid)
+    private Square[,] board = new Square[8, 8];
+
+    // Initialize the chessboard with colors and pieces
+    protected override void OnInitialized()
+    {
+        InitializeBoard();
+    }
+
+    private void InitializeBoard()
+    {
+        for (int row = 0; row < 8; row++)
+        {
+            for (int col = 0; col < 8; col++)
+            {
+                // Set the color of the square (alternating black and white)
+                string color = (row + col) % 2 == 0 ? "#D7B89E" : "#8E6E44";
+
+                // Initially set pieces in place (for example, setting pawns, etc.)
+                string piece = null;
+                if (row == 1)
+                    piece = "rook_dark.svg";  // Dark pawns
+                else if (row == 6)
+                    piece = "rook_light.svg";  // White pawns
+                else if (row == 0 || row == 7)
+                {
+                    // Add other pieces for the first and last rows (rooks, knights, etc.)
+                    if (col == 0 || col == 7)
+                        piece = row == 0 ? "rook_dark.svg" : "rook_light.svg";
+                    else if (col == 1 || col == 6)
+                        piece = row == 0 ? "knight_dark.svg" : "knight_light.svg";
+                    else if (col == 2 || col == 5)
+                        piece = row == 0 ? "bishop_dark.svg" : "bishop_light.svg";
+                    else if (col == 3)
+                        piece = row == 0 ? "queen_dark.svg" : "queen_light.svg";
+                    else if (col == 4)
+                        piece = row == 0 ? "king_dark.svg" : "king_light.svg";
+                }
+
+                board[row, col] = new Square
+                {
+                    Color = color,
+                    Piece = piece
+                };
+            }
+        }
+    }
+private string GetPieceAltText(string pieceImagePath)
+    {
+        if (string.IsNullOrEmpty(pieceImagePath))
+            return "Empty square"; // For empty squares
+
+        // Add logic to match pieces
+        if (pieceImagePath.Contains("black_pawn"))
+            return "Black Pawn";
+        else if (pieceImagePath.Contains("white_pawn"))
+            return "White Pawn";
+        else if (pieceImagePath.Contains("black_rook"))
+            return "Black Rook";
+        else if (pieceImagePath.Contains("white_rook"))
+            return "White Rook";
+        else if (pieceImagePath.Contains("black_knight"))
+            return "Black Knight";
+        else if (pieceImagePath.Contains("white_knight"))
+            return "White Knight";
+        else if (pieceImagePath.Contains("black_bishop"))
+            return "Black Bishop";
+        else if (pieceImagePath.Contains("white_bishop"))
+            return "White Bishop";
+        else if (pieceImagePath.Contains("black_queen"))
+            return "Black Queen";
+        else if (pieceImagePath.Contains("white_queen"))
+            return "White Queen";
+        else if (pieceImagePath.Contains("black_king"))
+            return "Black King";
+        else if (pieceImagePath.Contains("white_king"))
+            return "White King";
+
+        return "Chess piece";
+    }
+}
+
+@*
+@code
+{
+
+    private List<PiecePosition>? _piecePositions;
+    
+    protected override void OnInitialized()
+    {
+        _piecePositions =
+        [
+            new PiecePosition(0, 0, "dark_rook.svg"),
+            new PiecePosition(0, 1, "dark_knight.svg"),
+            new PiecePosition(0, 2, "dark_bishop.svg"),
+            new PiecePosition(0, 3, "dark_queen.svg"),
+            new PiecePosition(0, 4, "dark_king.svg"),
+            new PiecePosition(0, 5, "dark_bishop.svg"),
+            new PiecePosition(0, 6, "dark_knight.svg"),
+            new PiecePosition(0, 7, "dark_rook.svg"),
+            // dark pawns
+            new PiecePosition(1, 0, "dark_pawn.svg"),
+            new PiecePosition(1, 1, "dark_pawn.svg"),
+            new PiecePosition(1, 2, "dark_pawn.svg"),
+            new PiecePosition(1, 3, "dark_pawn.svg"),
+            new PiecePosition(1, 4, "dark_pawn.svg"),
+            new PiecePosition(1, 5, "dark_pawn.svg"),
+            new PiecePosition(1, 6, "dark_pawn.svg"),
+            new PiecePosition(1, 7, "dark_pawn.svg"),
+
+            // White pawns
+            new PiecePosition(6, 0, "white_pawn.svg"),
+            new PiecePosition(6, 1, "white_pawn.svg"),
+            new PiecePosition(6, 2, "white_pawn.svg"),
+            new PiecePosition(6, 3, "white_pawn.svg"),
+            new PiecePosition(6, 4, "white_pawn.svg"),
+            new PiecePosition(6, 5, "white_pawn.svg"),
+            new PiecePosition(6, 6, "white_pawn.svg"),
+            new PiecePosition(6, 7, "white_pawn.svg"),
+
+            // White pieces
+            new PiecePosition(7, 0, "white_rook.svg"),
+            new PiecePosition(7, 1, "white_knight.svg"),
+            new PiecePosition(7, 2, "white_bishop.svg"),
+            new PiecePosition(7, 3, "white_queen.svg"),
+            new PiecePosition(7, 4, "white_king.svg"),
+            new PiecePosition(7, 5, "white_bishop.svg"),
+            new PiecePosition(7, 6, "white_knight.svg"),
+            new PiecePosition(7, 7, "white_rook.svg")
+        ];
+    }
+    public class PiecePosition(int row, int col, string imageSource)
+    {
+        public int Row { get; set; } = row;
+        public int Col { get; set; } = col;
+        public string ImageSource { get; set; } = imageSource;
+    }
+   
+}
+*@
