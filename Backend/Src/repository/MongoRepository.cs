@@ -11,7 +11,7 @@ public class MongoRepository<T> : IMongoRepository<T> where T : class
 
     public MongoRepository(IMongoDatabase database, string collectionName)
     {
-        _collection = database.GetCollection<T>(collectionName);
+        _collection = database.GetCollection<T>("puzzles");
     }
 
     public async Task AddAsync(T entity)

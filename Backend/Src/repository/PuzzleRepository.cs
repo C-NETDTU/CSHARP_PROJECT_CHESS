@@ -10,9 +10,9 @@ namespace backend.src.repository
     {
         private readonly IMongoCollection<Puzzle> _collection;
 
-        public PuzzleRepository(IMongoDatabase database) : base(database, "Puzzles")
+        public PuzzleRepository(IMongoDatabase database) : base(database, "puzzles")
         {
-            _collection = database.GetCollection<Puzzle>("Puzzles");
+            _collection = database.GetCollection<Puzzle>("puzzles");
         }
 
         public async Task<IEnumerable<Puzzle>> GetByThemeAsync(string theme)
@@ -27,16 +27,22 @@ namespace backend.src.repository
             return await _collection.Find(filter).ToListAsync();
         }
 
-        public async Task<Puzzle?> GetRandomAsync()
+        public async Task<Puzzle> GetRandomAsync()
         {
             var pipeline = new BsonDocument[]
             {
             new BsonDocument("$sample", new BsonDocument("size", 1))
             };
-
-            return await _collection.Aggregate<Puzzle>(pipeline).FirstOrDefaultAsync();
+            var result = await _collection.Aggregate<Puzzle>(pipeline).FirstOrDefaultAsync();
+            if(result == null)
+            {
+                Console.WriteLine("No puzzle found.");
+                Console.WriteLine($"{_collection.Database.DatabaseNamespace.DatabaseName}");
+            }
+            return result;
         }
-        public async Task<Puzzle?> GetRandomByCriteriaAsync<T>(string criteria, T match)
+
+        public async Task<Puzzle> GetRandomByCriteriaAsync<T>(string criteria, T match)
         {
             Puzzle? result = null;
             if (criteria == "Rating" && match is int matchInt)
