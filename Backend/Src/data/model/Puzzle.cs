@@ -1,7 +1,7 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using System.Text.Json;
-using ThirdParty.Json.LitJson;
+using System.Text.Json.Serialization;
 
 namespace src.data.model
 {
@@ -15,6 +15,7 @@ namespace src.data.model
         /// </summary>
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
+        [JsonPropertyName("_id")]
         public string Id { get; set; } = string.Empty!;
 
         /// <summary>
@@ -37,12 +38,30 @@ namespace src.data.model
         /// Puzzle rating
         /// </summary>
         [BsonElement("Rating")]
-        public int? Rating { get; set; } = null!;
+        public int Rating { get; set; }
         /// <summary>
         /// Themes present in puzzle
         /// </summary>
         [BsonElement("Themes")]
         public string Themes { get; set; } = string.Empty;
 
+        /// <summary>
+        /// Parameterless constructor for Puzzle class
+        /// </summary>
+        public Puzzle() { }
+
+        /// <summary>
+        /// Parameterized constructor for Puzzle class
+        /// </summary>
+        public Puzzle(string id, string? puzzleId, string? fen, string? moves, int rating, string themes)
+        {
+            Id = id;
+            PuzzleId = puzzleId;
+            FEN = fen;
+            Moves = moves;
+            Rating = rating;
+            Themes = themes;
+        }
     }
+    
 }

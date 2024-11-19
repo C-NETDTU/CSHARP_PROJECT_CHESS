@@ -16,7 +16,7 @@ namespace MongoDBApi
 
                 var builder = WebApplication.CreateBuilder(args);
                 builder.Services.Configure<PuzzleDBSettings>(builder.Configuration.GetSection("PuzzleDatabase"));
-                builder.Services.AddSingleton<PuzzleService>();
+                builder.Services.AddSingleton<IPuzzleService,PuzzleService>();
                 // Add services to the container.
                 builder.Services.AddDbContext<PuzzleDbContext>(opt => opt.UseInMemoryDatabase("puzzleDB"));
                 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -25,7 +25,8 @@ namespace MongoDBApi
                 {
                     options.SwaggerDoc("v1", new OpenApiInfo { Title = "MyChessApi", Version = "v1" });
                 });
-                builder.Services.AddControllers();
+                builder.Services.AddControllers()
+                    .AddJsonOptions(options => options.JsonSerializerOptions.PropertyNamingPolicy = null);
 
                 var app = builder.Build();
 

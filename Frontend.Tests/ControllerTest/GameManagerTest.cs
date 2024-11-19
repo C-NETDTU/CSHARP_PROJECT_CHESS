@@ -3,7 +3,7 @@ using Xunit;
 using Frontend.Model.ChessBoard;
 using Frontend.Model.ChessPiece;
 using Frontend.Model.ChessMove;
-using Frontend.Model.Game;
+using Frontend.Controller;
 
 public class GameManagerTests
 {
@@ -16,7 +16,7 @@ public class GameManagerTests
         // Act & Assert
         Assert.NotNull(gameManager.CurrentBoard);               // Ensure board is initialized
         Assert.NotNull(gameManager.chessGame);                 // Ensure chessGame is initialized
-        Assert.Equal(0, gameManager.gameHistory.Count);         // No moves should be in history initially
+        Assert.Empty(gameManager.gameHistory);         // No moves should be in history initially
         Assert.Equal(Set.White, gameManager.CurrentTurn);       // White should start first
     }
 
@@ -54,14 +54,20 @@ public class GameManagerTests
         // Act
         var validMoves = gameManager.GetLegalMoves(Position.e2);
         var move = validMoves.Find(m => m.To == Position.e4);
-        gameManager.ApplyMove(move);
+        if (move != null)
+        {
+            gameManager.ApplyMove(move);
+        }
 
         // Assert
         Assert.Equal(Set.Black, gameManager.CurrentTurn); // Turn should change to black
         Assert.Null(gameManager.CurrentBoard[Position.e2].Piece); // e2 should now be empty
         Assert.NotNull(gameManager.CurrentBoard[Position.e4].Piece); // e4 should now have a piece
 
-        Assert.Equal(move.Piece, gameManager.CurrentBoard[Position.e4].Piece); // The piece on e4 should be the same as the one moved
+        if (move != null)
+        {
+            Assert.Equal(move.Piece, gameManager.CurrentBoard[Position.e4].Piece); // The piece on e4 should be the same as the one moved
+        }
 
         // we'll also check if the move is added to the history
         Assert.Single(gameManager.gameHistory); // Only one move should be in history
@@ -76,22 +82,31 @@ public class GameManagerTests
         // Act
         var validMoves = gameManager.GetLegalMoves(Position.e2);
         var move = validMoves.Find(m => m.To == Position.e4);
-        gameManager.ApplyMove(move);
+        if(move != null){
+            gameManager.ApplyMove(move);
+        }
 
         validMoves = gameManager.GetLegalMoves(Position.d7);
         move = validMoves.Find(m => m.To == Position.d5);
-        gameManager.ApplyMove(move);
+        if(move != null){
+            gameManager.ApplyMove(move);
+        }
 
         validMoves = gameManager.GetLegalMoves(Position.e4);
         move = validMoves.Find(m => m.To == Position.d5);
-        gameManager.ApplyMove(move);
+        if(move != null){
+            gameManager.ApplyMove(move);
+        }
 
         // Assert
         Assert.Equal(Set.Black, gameManager.CurrentTurn); // Turn should change to black
         Assert.Null(gameManager.CurrentBoard[Position.e4].Piece); // e4 should now be empty
         Assert.NotNull(gameManager.CurrentBoard[Position.d5].Piece); // d5 should now have a piece
 
-        Assert.Equal(move.Piece, gameManager.CurrentBoard[Position.d5].Piece); // The piece on d5 should be the same as the one moved
+        if (move != null)
+        {
+            Assert.Equal(move.Piece, gameManager.CurrentBoard[Position.d5].Piece); // The piece on d5 should be the same as the one moved
+        }
 
         // we'll also check if the move is added to the history
         Assert.Equal(3, gameManager.gameHistory.Count); // 3 moves should be in history
@@ -106,31 +121,45 @@ public class GameManagerTests
         // Act
         var validMoves = gameManager.GetLegalMoves(Position.g1);
         var move = validMoves.Find(m => m.To == Position.f3);
-        gameManager.ApplyMove(move);
+        if(move != null){
+            gameManager.ApplyMove(move);
+        }
 
         validMoves = gameManager.GetLegalMoves(Position.g8);
         move = validMoves.Find(m => m.To == Position.f6);
-        gameManager.ApplyMove(move);
+        if(move != null){
+            gameManager.ApplyMove(move);
+        }
 
         validMoves = gameManager.GetLegalMoves(Position.g2);
         move = validMoves.Find(m => m.To == Position.g3);
-        gameManager.ApplyMove(move);
+        if(move != null){
+            gameManager.ApplyMove(move);
+        }
 
         validMoves = gameManager.GetLegalMoves(Position.g7);
         move = validMoves.Find(m => m.To == Position.g6);
-        gameManager.ApplyMove(move);
+        if(move != null){
+            gameManager.ApplyMove(move);
+        }
 
         validMoves = gameManager.GetLegalMoves(Position.f1);
         move = validMoves.Find(m => m.To == Position.g2);
-        gameManager.ApplyMove(move);
+        if(move != null){
+            gameManager.ApplyMove(move);
+        }
 
         validMoves = gameManager.GetLegalMoves(Position.f8);
         move = validMoves.Find(m => m.To == Position.g7);
-        gameManager.ApplyMove(move);
+        if(move != null){
+            gameManager.ApplyMove(move);
+        }
 
         validMoves = gameManager.GetLegalMoves(Position.e1);
         move = validMoves.Find(m => m.To == Position.g1);
-        gameManager.ApplyMove(move);
+        if(move != null){
+            gameManager.ApplyMove(move);
+        }
 
         // Assert
         Assert.Equal(Set.Black, gameManager.CurrentTurn); // Turn should change to black
@@ -140,7 +169,10 @@ public class GameManagerTests
         Assert.NotNull(gameManager.CurrentBoard[Position.f1].Piece); // f1 should now have a piece
         Assert.NotNull(gameManager.CurrentBoard[Position.g1].Piece); // g1 should now have a piece
 
-        Assert.Equal(move.Piece, gameManager.CurrentBoard[Position.g1].Piece); // The piece on g1 should be the same as the one moved
+        if (move != null)
+        {
+            Assert.Equal(move.Piece, gameManager.CurrentBoard[Position.g1].Piece); // The piece on g1 should be the same as the one moved
+        }
         Assert.IsType<Rook>(gameManager.CurrentBoard[Position.f1].Piece); // The piece on f1 should be a rook
 
         // we'll also check if the move is added to the history
@@ -148,7 +180,9 @@ public class GameManagerTests
 
         validMoves = gameManager.GetLegalMoves(Position.e8);
         move = validMoves.Find(m => m.To == Position.g8);
-        gameManager.ApplyMove(move);
+        if(move != null){
+            gameManager.ApplyMove(move);
+        }
 
         // Assert
         Assert.Equal(Set.White, gameManager.CurrentTurn); // Turn should change to white
@@ -158,7 +192,10 @@ public class GameManagerTests
         Assert.NotNull(gameManager.CurrentBoard[Position.f8].Piece); // f8 should now have a piece
         Assert.NotNull(gameManager.CurrentBoard[Position.g8].Piece); // g8 should now have a piece
 
-        Assert.Equal(move.Piece, gameManager.CurrentBoard[Position.g8].Piece); // The piece on g8 should be the same as the one moved
+        if (move != null)
+        {
+            Assert.Equal(move.Piece, gameManager.CurrentBoard[Position.g8].Piece); // The piece on g8 should be the same as the one moved
+        }
         Assert.IsType<Rook>(gameManager.CurrentBoard[Position.f8].Piece); // The piece on f8 should be a rook
 
         // we'll also check if the move is added to the history
@@ -199,14 +236,16 @@ public class GameManagerTests
         var fen = "8/PK6/8/8/8/8/1pk5/8 w - - 0 1";
 
         // Act
-        var board = GameManager.FenToDictionary(fen);
+        var (pieces, turn) = GameManager.FenToDictionary(fen);
+        var board = new Board(pieces, turn);
 
         // Assert
-        Assert.Equal(4, board.Count); // 4 positions should be in the dictionary
-        Assert.IsType<Pawn>(board[Position.a7]); // a7 should have a pawn
-        Assert.IsType<King>(board[Position.b7]); // b7 should have a king
-        Assert.IsType<Pawn>(board[Position.b2]); // b2 should have a pawn
-        Assert.IsType<King>(board[Position.c2]); // c2 should have a king
+        Assert.Equal(4, board.Pieces.Count); // 4 positions should be in the dictionary
+        Assert.IsType<Pawn>(board.Pieces[Position.a7]); // a7 should have a pawn
+        Assert.IsType<King>(board.Pieces[Position.b7]); // b7 should have a king
+        Assert.IsType<Pawn>(board.Pieces[Position.b2]); // b2 should have a pawn
+        Assert.IsType<King>(board.Pieces[Position.c2]); // c2 should have a king
+        Assert.Equal(Set.White, board.Turn); // Turn should be white
     }
 
     [Fact]
@@ -218,7 +257,10 @@ public class GameManagerTests
 
         var validMoves = gameManager.GetLegalMoves(Position.e2);
         var move = validMoves.Find(m => m.To == Position.e4);
-        gameManager.ApplyMove(move);
+        
+        if(move != null){
+            gameManager.ApplyMove(move);
+        }
 
         Assert.Equal(Set.Black, gameManager.CurrentTurn); // Turn should change to black
         validMoves = gameManager.GetLegalMoves(Position.d4);
@@ -228,7 +270,9 @@ public class GameManagerTests
         Assert.Contains(validMoves, move => move.To == Position.e3); // Pawn can capture with move to e3
 
         move = validMoves.Find(m => m.To == Position.e3);
-        gameManager.ApplyMove(move);
+        if(move != null){
+            gameManager.ApplyMove(move);
+        }
 
         System.Console.WriteLine("move made: " + move);
 
@@ -237,7 +281,10 @@ public class GameManagerTests
         Assert.Null(gameManager.CurrentBoard[Position.d4].Piece); // d4 should now be empty
         Assert.NotNull(gameManager.CurrentBoard[Position.e3].Piece); // e3 should now have a piece
         Assert.IsType<Pawn>(gameManager.CurrentBoard[Position.e3].Piece); // The piece on e3 should be a pawn
-        Assert.Equal(move.Piece.Set, gameManager.CurrentBoard[Position.e3].Piece.Set); // The piece on e3 should be the same color
+        if (move != null)
+        {
+            Assert.Equal(move.Piece.Set, gameManager.CurrentBoard.Pieces[Position.e3].Set); // The piece on e3 should be the same color
+        }
 
     }
 }

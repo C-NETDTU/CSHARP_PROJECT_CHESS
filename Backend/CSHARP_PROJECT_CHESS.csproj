@@ -17,14 +17,13 @@
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.6" />
     <PackageReference Include="MongoDB.Driver" Version="3.0.0" />
-    <PackageReference Include="MongoDB.Driver.Core" Version="2.30.0" />
-    <PackageReference Include="MongoDB.EntityFrameworkCore" Version="8.1.1" />
+    <PackageReference Include="MongoDB.EntityFrameworkCore" Version="8.2.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.9.0" />
   </ItemGroup>
-
   <ItemGroup>
-    <Folder Include="src\data\network\" />
-    <Folder Include="src\data\repositories\" />
+    <ProjectReference Include="..\Shared\Shared.csproj" />
   </ItemGroup>
+
+
 
 </Project>
