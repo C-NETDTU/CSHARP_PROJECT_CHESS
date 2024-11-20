@@ -21,6 +21,10 @@ public static class MauiProgram
         builder.Services.AddBlazorWebViewDeveloperTools();
         builder.Logging.AddDebug();
 #endif
+        builder.Services.AddHttpClient<ApiManager>(client =>
+        {
+            client.BaseAddress = new Uri("http://localhost:27017");
+        });
         builder.Services.AddSingleton<PuzzleManager>();
         builder.Services.AddTransient<GameManager>();
         return builder.Build();

@@ -23,6 +23,7 @@ else
     else
     {
         Console.WriteLine("StartPage: GameManager is null. ChessBoard will not render.");
+        <p> Loading Puzzle </p>    
     }
 </div>
 }
@@ -30,11 +31,11 @@ else
 @code {
 private bool _isGameActive = false;
 
-private void StartSurvival()
+private async Task StartSurvival()
 {
 try
 {
-PuzzleManager.Initialize(); // Initialize PuzzleManager
+await PuzzleManager.FetchAndLoadPuzzle(); // Initialize PuzzleManager
 _isGameActive = true;
 }
 catch (Exception ex)

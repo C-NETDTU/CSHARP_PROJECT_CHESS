@@ -10,13 +10,8 @@ namespace Frontend.Controller
 {
     public class PuzzleManager
     {
-        private readonly HttpClient _httpClient = new HttpClient(new HttpClientHandler())
-        {
-            BaseAddress = new Uri("http://localhost:52474")
-        };
-
+        public ApiManager ApiManager;
         public GameManager? GameManager;
-        
         private Queue<PuzzleDTO> puzzleQueue;
         public int strikes;
         private int maxStrikes = 3;
@@ -26,10 +21,11 @@ namespace Frontend.Controller
 
         public event Action<bool>? OnPuzzleCompleted;
 
-        public event Action? OnNewPuzzleLoaded;
+        public event Action? OnPuzzleLoaded;
 
-        public PuzzleManager()
+        public PuzzleManager(ApiManager apiManager)
         {
+            ApiManager = apiManager;
             puzzleQueue = new Queue<PuzzleDTO>();
             score = 0;
             strikes = 0;
@@ -57,7 +53,33 @@ namespace Frontend.Controller
             catch (Exception ex)
             {
                 Console.WriteLine($"Error in PuzzleManager.Initialize: {ex.Message}");
-                throw; // Rethrow to let Blazor show the error (or handle it gracefully)
+                throw;
+            }
+        }
+        
+        public async Task FetchAndLoadPuzzle()
+        {
+            try
+            {
+                Console.WriteLine("PuzzleManager: Fetching a random puzzle...");
+                PuzzleDTO? puzzleDto = await ApiManager.RetrieveRandomPuzzle();
+
+                if (puzzleDto != null)
+                {
+                    Console.WriteLine($"PuzzleManager: Fetched puzzle with FEN: {puzzleDto.FEN}");
+                    
+                    GameManager = new GameManager(puzzleDto.FEN);
+                    
+                    OnPuzzleLoaded?.Invoke();
+                }
+                else
+                {
+                    Console.WriteLine("PuzzleManager: No puzzle returned from the API.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"PuzzleManager: Error fetching puzzle: {ex.Message}");
             }
         }
     }
