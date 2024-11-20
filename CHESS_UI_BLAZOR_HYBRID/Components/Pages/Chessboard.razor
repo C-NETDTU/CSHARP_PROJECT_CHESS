@@ -24,7 +24,7 @@
             @for (int col = 0; col < 8; col++)
             {
                 var square = board[row, col];
-                <div class="square" style="background-color: @square.Color; display: flex; justify-content: center; align-items: center; width: 100px; height: 100px; border: 2px solid gray;">
+                <div class="square @square.Color">
                     @if (square.Piece != null)
                     {
                         <img src="images/@square.Piece" class="piece" style="width: 90px; height: 90px;" alt="@GetPieceAltText(square.Piece)" object-fit:contain/>
@@ -60,7 +60,7 @@
             for (int col = 0; col < 8; col++)
             {
                 // Set the color of the square (alternating black and white)
-                string color = (row + col) % 2 == 0 ? "#D7B89E" : "#8E6E44";
+                string color = (row + col) % 2 == 0 ? "light-square" : "dark-square";
 
                 // Initially set pieces in place (for example, setting pawns, etc.)
                 string piece = null;
