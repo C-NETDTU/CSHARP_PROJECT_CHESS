@@ -23,7 +23,7 @@ public static class MauiProgram
 #endif
         builder.Services.AddHttpClient<ApiManager>(client =>
         {
-            client.BaseAddress = new Uri("http://localhost:27017");
+            client.BaseAddress = new Uri("http://localhost:5056");
         });
         builder.Services.AddSingleton<PuzzleManager>();
         builder.Services.AddTransient<GameManager>();
