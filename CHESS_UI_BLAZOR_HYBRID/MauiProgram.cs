@@ -1,4 +1,8 @@
 ﻿using Microsoft.Extensions.Logging;
+using Frontend.Controller;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Controls.Hosting;
+using Microsoft.Maui.Hosting;
 
 namespace CHESS_UI_BLAZOR_HYBRID;
 
@@ -17,7 +21,8 @@ public static class MauiProgram
         builder.Services.AddBlazorWebViewDeveloperTools();
         builder.Logging.AddDebug();
 #endif
-
+        builder.Services.AddSingleton<PuzzleManager>();
+        builder.Services.AddTransient<GameManager>();
         return builder.Build();
     }
 }

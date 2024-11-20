@@ -24,24 +24,21 @@ namespace Frontend.Controller
         public event Action? OnUserTurn;
 
         //This constructor will make a chessGame with the initial board position
-        public GameManager()
-        {
-
-            chessGame = new ChessGame();
-            gameHistory = new Stack<Board>();
-            CurrentBoard = new Board();
-
-        }
-
         public GameManager(string fen)
         {
+
             chessGame = new ChessGame(fen);
             gameHistory = new Stack<Board>();
             var (pieces, turn) = FenToDictionary(fen);
             CurrentBoard = new Board(pieces, turn);
-        }
+            System.Console.WriteLine("Game initialized with pieces: ");
+            foreach (var piece in CurrentBoard.Pieces)
+            {
+                Console.WriteLine($"Piece: {piece.Value.GetType().Name} at {piece.Key}");
+            }
 
-        //TODO: We need a alternative constructor that makes a game from custom position
+        }
+        /*
         public GameManager(string fen, List<string> solutionMoves)
         {
             chessGame = new ChessGame(fen);
@@ -54,6 +51,7 @@ namespace Frontend.Controller
 
             PerformNextMove();
         }
+        */
 
         public void PerformNextMove()
         {
