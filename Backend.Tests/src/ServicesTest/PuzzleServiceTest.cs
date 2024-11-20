@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using MongoDB.Driver;
 using Microsoft.Extensions.Options;
 using Microsoft.CodeAnalysis.Elfie.Serialization;
+using Shared.DTO;
 
 namespace Backend.Services.Tests
 {
@@ -20,15 +21,15 @@ namespace Backend.Services.Tests
             _puzzleService = puzzleService;
         }
 
-        public Task<List<Puzzle>> GetPuzzles(int pageNumber, int pageSize)
+        public Task<List<PuzzleDTO>> GetPuzzles(int pageNumber, int pageSize)
         {
             return _puzzleService.GetAsync(pageNumber, pageSize);
         }
-        public Task<List<Puzzle>> GetRating(int rating)
+        public Task<List<PuzzleDTO>> GetRating(int rating)
         {
             return _puzzleService.GetAsyncRating(rating);
         }
-        public Task<Puzzle> GetMatchingCriteria(string Criteria, string Match)
+        public Task<PuzzleDTO> GetMatchingCriteria(string Criteria, string Match)
         {
             return _puzzleService.GetAsyncRandomByCriteria(Criteria, Match); 
         }
@@ -39,7 +40,7 @@ namespace Backend.Services.Tests
         public async Task GetPuzzles_ReturnsExpectedPuzzles()
         {
             var mockPuzzleService = new Mock<IPuzzleService>();
-            var expectedPuzzles = new List<Puzzle> { new Puzzle { Id = "1" }, new Puzzle { Id = "2" } };
+            var expectedPuzzles = new List<PuzzleDTO> { new PuzzleDTO { Id = "1" }, new PuzzleDTO { Id = "2" } };
 
             mockPuzzleService.Setup(service => service.GetAsync(1, 2)).ReturnsAsync(expectedPuzzles);
 
@@ -53,7 +54,7 @@ namespace Backend.Services.Tests
         public async Task GetPuzzleByRating_ReturnsExpectedPuzzle()
         {
             var mockPuzzleService = new Mock<IPuzzleService>();
-            var possiblePuzzles = new List<Puzzle> { new Puzzle { Id = "1", Rating = 1200 }, new Puzzle { Id = "2", Rating = 1100 }, new Puzzle { Id = "3", Rating = 2000 } };
+            var possiblePuzzles = new List<PuzzleDTO> { new PuzzleDTO { Id = "1", Rating = 1200 }, new PuzzleDTO { Id = "2", Rating = 1100 }, new PuzzleDTO { Id = "3", Rating = 2000 } };
 
             mockPuzzleService.Setup(service => service.GetAsyncRating(1100)).ReturnsAsync(possiblePuzzles);
 
@@ -67,7 +68,7 @@ namespace Backend.Services.Tests
         public async Task GetRandomPuzzleByCriteria_ReturnsExpectedPuzzle()
         {
             var mockPuzzleService = new Mock<IPuzzleService>(); ;
-            var possiblePuzzles = new List<Puzzle> { new Puzzle { Id = "1", Themes = "discoveredAttack, endGame" }, new Puzzle { Id = "2", Themes = "advantage, endGame" }, new Puzzle { Id = "3", Themes = "advancedPawn, skewer" } };
+            var possiblePuzzles = new List<PuzzleDTO> { new PuzzleDTO { Id = "1", Themes = "discoveredAttack, endGame" }, new PuzzleDTO { Id = "2", Themes = "advantage, endGame" }, new PuzzleDTO { Id = "3", Themes = "advancedPawn, skewer" } };
 
             mockPuzzleService.Setup(service => service.GetAsyncRandomByCriteria("Themes", "discoveredAttack")).ReturnsAsync((string criteria, string match) => possiblePuzzles.Find(p => p.Themes.Contains(match)));
 
