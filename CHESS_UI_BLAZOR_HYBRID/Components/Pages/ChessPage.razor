@@ -1,16 +1,47 @@
-@page "/chess"
-@using Frontend.Model.ChessBoard
-@inject Frontend.Controller.GameManager GameManager
+@page "/start"
+@inject Frontend.Controller.PuzzleManager PuzzleManager
 
-<h3>Chess Puzzle</h3>
-<p>Turn: @GameManager.CurrentTurn</p>
 
-<Chessboard />
+@if (!_isGameActive)
+{
+<div class="start-container">
+    <h1>Welcome to Survival Mode</h1>
+    <button class="start-button" @onclick="StartSurvival">Start Survival</button>
+</div>
+}
+else
+{
+<div class="game-container">
+    <p>Score: @PuzzleManager.score</p>
+    <p>Streak: @PuzzleManager.streak</p>
+    <p>Strikes: @PuzzleManager.strikes / 3</p>
+    @if (PuzzleManager.GameManager != null)
+    {
+        Console.WriteLine("StartPage: GameManager is not null. Rendering ChessBoard.");
+        <ChessBoard GameManager="PuzzleManager.GameManager"/>
+    }
+    else
+    {
+        Console.WriteLine("StartPage: GameManager is null. ChessBoard will not render.");
+    }
+</div>
+}
 
 @code {
-    protected override void OnInitialized()
-    {
-        // Initialize the GameManager with the default board setup
-        GameManager = new Frontend.Controller.GameManager();
-    }
+private bool _isGameActive = false;
+
+private void StartSurvival()
+{
+try
+{
+PuzzleManager.Initialize(); // Initialize PuzzleManager
+_isGameActive = true;
+}
+catch (Exception ex)
+{
+_isGameActive = false; // Reset game state
+Console.WriteLine($"Error in StartSurvival: {ex.Message}");
+}
+}
+
 }

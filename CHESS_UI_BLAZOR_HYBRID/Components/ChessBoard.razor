@@ -1,5 +1,48 @@
-<h3>ChessBoard</h3>
+@using Frontend.Model.ChessBoard
+@using Frontend.Model.ChessPiece
+
+<div class="chessboard">
+    @if (GameManager?.CurrentBoard != null) // Ensure CurrentBoard is not null
+    {
+    @for (int rank = 8; rank >= 1; rank--)
+    {
+    <div class="chessboard-row">
+        @for (int file = 1; file <= 8; file++)
+        {
+        var position = PositionMethods.From(file, rank);
+        var square = GameManager.CurrentBoard.Squares[position];
+        <div class="chessboard-square @(square.IsDark ? "dark" : "light")">
+            @if (square.Piece != null)
+            {
+            <img src="@GetPieceImage(square.Piece)" alt="@square.Piece.GetType().Name" />
+            }
+        </div>
+        }
+    </div>
+    }
+    }
+    else
+    {
+    <p>Loading board...</p>
+    }
+</div>
 
 @code {
-    
+[Parameter]
+public Frontend.Controller.GameManager GameManager { get; set; } // Passed as a parameter
+
+    protected override void OnParametersSet()
+    {
+        Console.WriteLine("ChessBoard: Parameters set, attempting to render.");
+    }
+
+private string GetPieceImage(IPiece piece)
+{
+// Map piece type and set to an image URL
+var filePath = $"images/{piece.GetType().Name.ToLower()}_{piece.Set.ToString().ToLower()}.svg";
+
+    // Print the file path to the console for debugging
+    Console.WriteLine("File path: " + filePath);
+return $"images/{piece.GetType().Name.ToLower()}_{piece.Set.ToString().ToLower()}.svg";
+}
 }
