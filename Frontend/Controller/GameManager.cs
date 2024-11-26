@@ -116,6 +116,7 @@ namespace Frontend.Controller
             MoveType type = chessGame.MakeMove(chessMove, true);
             var newBoard = move.ApplyOn(CurrentBoard);
             newBoard.LastMove = new AppliedMove(move);
+            newBoard.Turn = move.Piece.Set.Opposite();
 
             Console.WriteLine($"ApplyMove: Move applied - {move}. Turn before push: {newBoard.Turn}");
 
