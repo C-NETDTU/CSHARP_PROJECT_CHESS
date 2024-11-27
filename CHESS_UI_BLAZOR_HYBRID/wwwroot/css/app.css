@@ -84,11 +84,3 @@ h1:focus {
         padding-left: env(safe-area-inset-left);
     }
 }
-
-.light-square {
-    background-color: #D7B89E; /* Light brown/tan */
-}
-
-.dark-square {
-    background-color: #8E6E44; /* Darker brown */
-}

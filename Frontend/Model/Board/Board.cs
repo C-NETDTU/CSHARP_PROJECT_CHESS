@@ -13,7 +13,7 @@ namespace Frontend.Model.ChessBoard
 
         public AppliedMove? LastMove { get; set; }
 
-        public Set Turn => LastMove?.Move.Piece.Set == Set.White ? Set.Black : Set.White;
+        public Set Turn {get; set;}
 
         // This default constructor initializes the board with the initial pieces (see bottom of file)
         public Board() : this(InitialPieces) { }
@@ -28,6 +28,7 @@ namespace Frontend.Model.ChessBoard
                               position => position,
                               position => new Square(position, Pieces.ContainsKey(position) ? Pieces[position] : null)
                           );
+            Turn = turn ?? Set.White;
         }
 
         // Access square by position

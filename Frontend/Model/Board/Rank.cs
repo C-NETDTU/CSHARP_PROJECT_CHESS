@@ -16,6 +16,11 @@ namespace Frontend.Model.ChessBoard
             ValidateFile(file);
             return (Position)((int)file * 8 + (int)rank);
         }
+        
+        public static int GetRankInt(this Position position)
+        {
+            return ((int)position % 8) + 1;
+        }
 
         // Private helper to validate the file
         private static void ValidateFile(File file)
