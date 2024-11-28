@@ -96,10 +96,14 @@
 [Parameter]
 public Frontend.Controller.GameManager GameManager { get; set; } // Passed as a parameter
 
-    protected override void OnParametersSet()
+    protected override async Task OnParametersSetAsync()
     {
         Console.WriteLine("ChessBoard: Parameters set, attempting to render.");
+        await Task.Delay(1000);
+        GameManager.PerformNextMove();
+        StateHasChanged(); // Trigger UI update after first move
     }
+
 
 private string GetPieceImage(IPiece piece)
 {
@@ -142,7 +146,7 @@ private Task OnSquareClicked(int file, int rank)
 
 private Task OnMoveDotClicked(BoardMove boardMove)
 {
-    GameManager.ApplyMove(boardMove);
+    GameManager.OnUserMove(boardMove);
     return Task.CompletedTask;
 }
 

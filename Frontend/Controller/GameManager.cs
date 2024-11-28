@@ -19,12 +19,12 @@ namespace Frontend.Controller
 
         public Set CurrentTurn => CurrentBoard.Turn;
 
+        public event Action<bool>? OnCorrectMove;
         public event Action<bool>? OnPuzzleCompleted;
-        public event Action<BoardMove>? OnMovePerformed;
-        public event Action? OnUserTurn;
+        public event Action? OnUserMoveApplied;
 
         //This constructor will make a chessGame with the initial board position
-        public GameManager(string fen)
+        public GameManager(string fen, List<string> solutionMoves)
         {
 
             chessGame = new ChessGame(fen);
@@ -36,22 +36,16 @@ namespace Frontend.Controller
             {
                 Console.WriteLine($"Piece: {piece.Value.GetType().Name} at {piece.Key}");
             }
-
-        }
-        /*
-        public GameManager(string fen, List<string> solutionMoves)
-        {
-            chessGame = new ChessGame(fen);
-            gameHistory = new Stack<Board>();
-
-            var (pieces, turn) = FenToDictionary(fen);
-            CurrentBoard = new Board(pieces, turn);
-
             this.solutionMoves = ParseSolutionMoves(solutionMoves);
+            //debug
+            Console.WriteLine($"Parsed solution moves: {solutionMoves.Count}");
+            foreach (var move in this.solutionMoves)
+            {
+                Console.WriteLine(move);
+            }
 
-            PerformNextMove();
         }
-        */
+        
 
         public void PerformNextMove()
         {
@@ -59,10 +53,6 @@ namespace Frontend.Controller
             {
                 var nextMove = solutionMoves.Dequeue();
                 ApplyMove(nextMove);
-
-                OnMovePerformed?.Invoke(nextMove); // Here we notify the UI that a move has been performed by the GameManager
-
-                OnUserTurn?.Invoke(); // Here we notify the UI that it is the user's turn to make a move    
             }
         }
 
@@ -72,25 +62,28 @@ namespace Frontend.Controller
             {
                 throw new InvalidOperationException("No solution moves available.");
             }
+            Console.WriteLine($"User moved: {userMove}. Expected: {solutionMoves.Peek()}.");
+            ApplyMove(userMove);
+            
             var expectedMove = solutionMoves.Peek();
-            if (userMove.Equals(expectedMove))
+            Console.WriteLine(userMove.ToString().Equals(expectedMove.ToString()));
+            if (userMove.From == expectedMove.From && userMove.To == expectedMove.To)
             {
-                ApplyMove(userMove);
+                Console.WriteLine("User move is correct.");
                 solutionMoves.Dequeue();
 
-                if (solutionMoves.Count > 0)
+                if (solutionMoves.Count == 0)
                 {
-                    PerformNextMove();
+                    Console.WriteLine("No solution moves available - puzzle completed");
+                    OnPuzzleCompleted?.Invoke(true);
                 }
-                else
-                {
-                    OnPuzzleCompleted?.Invoke(true); // Here we notify the UI that the puzzle was completed successfully
-                }
-            }
+            }  
             else
             {
-                OnPuzzleCompleted?.Invoke(false); // Here we notify the UI that the puzzle was completed unsuccessfully
+                Console.WriteLine("User move is incorrect.");
+                OnPuzzleCompleted?.Invoke(false); 
             }
+            OnUserMoveApplied?.Invoke();
         }
 
         public List<BoardMove> GetLegalMoves(ChessPosition customPosition)
@@ -207,7 +200,9 @@ namespace Frontend.Controller
         {
             var from = FromChessDotNetPosition(chessMove.OriginalPosition);
             var to = FromChessDotNetPosition(chessMove.NewPosition);
+            
             var piece = CurrentBoard.Pieces[from];
+            
 
             IPrimaryMove primaryMove = new Model.ChessMove.Move(piece, from, to);
             IPreMove? preMove = null;

@@ -18,10 +18,8 @@ namespace Frontend.Controller
         public int score;
         public int streak;
         private int maxStreak;
-
-        public event Action<bool>? OnPuzzleCompleted;
-
-        public event Action? OnPuzzleLoaded;
+        
+        public event Action<bool>? OnSurvialCompleted; 
 
         public PuzzleManager(ApiManager apiManager)
         {
@@ -46,8 +44,10 @@ namespace Frontend.Controller
                     Rating = 1000,
                     Themes = ""
                 };
+                
+                var solutionMoves = ParseSolutionToList(puzzle.Themes);
 
-                GameManager = new GameManager(puzzle.FEN); // Pass the FEN
+                GameManager = new GameManager(puzzle.FEN, solutionMoves); // Pass the FEN
                 Console.WriteLine("GameManager initialized successfully.");
             }
             catch (Exception ex)
@@ -55,6 +55,16 @@ namespace Frontend.Controller
                 Console.WriteLine($"Error in PuzzleManager.Initialize: {ex.Message}");
                 throw;
             }
+        }
+
+        private List<string> ParseSolutionToList(string solution)
+        {
+            if (string.IsNullOrWhiteSpace(solution))
+                throw new ArgumentException("The solution string cannot be null or empty.", nameof(solution));
+            
+            var solutionList = solution.Split(' ', StringSplitOptions.RemoveEmptyEntries).ToList();
+
+            return solutionList;
         }
         
         public async Task FetchAndLoadPuzzle()
@@ -66,11 +76,11 @@ namespace Frontend.Controller
 
                 if (puzzleDto != null)
                 {
-                    Console.WriteLine($"PuzzleManager: Fetched puzzle with FEN: {puzzleDto.FEN}");
+                    Console.WriteLine($"PuzzleManager: Fetched puzzle with FEN: {puzzleDto.FEN} and moves: {puzzleDto.Moves}");
                     
-                    GameManager = new GameManager(puzzleDto.FEN);
-                    
-                    OnPuzzleLoaded?.Invoke();
+                    var solution = ParseSolutionToList(puzzleDto.Moves);
+                    GameManager = new GameManager(puzzleDto.FEN, solution );
+                    GameManager.OnPuzzleCompleted += HandlePuzzleCompleted;
                 }
                 else
                 {
@@ -82,5 +92,39 @@ namespace Frontend.Controller
                 Console.WriteLine($"PuzzleManager: Error fetching puzzle: {ex.Message}");
             }
         }
+
+        private void HandlePuzzleCompleted(bool success)
+        {
+            try
+            {
+                Console.WriteLine("PuzzleManager: Entered HandlePuzzleCompleted with " + success);
+
+                if (success)
+                {
+                    score++;
+                    OnSurvialCompleted?.Invoke(false);
+                }
+                else
+                {
+                    Console.WriteLine("PuzzleManager: Updated strike");
+                    strikes++;
+                    if (strikes == maxStrikes)
+                    {
+                        Console.WriteLine("PuzzleManager: Max streaks reached.");
+                        OnSurvialCompleted?.Invoke(true);
+                    }
+                    else
+                    {
+                        Console.WriteLine("PuzzleManager: One strike made");
+                        OnSurvialCompleted?.Invoke(false);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"PuzzleManager: Exception in HandlePuzzleCompleted - {ex.Message}");
+            }
+        }
+
     }
 }
