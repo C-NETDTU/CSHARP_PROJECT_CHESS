@@ -148,6 +148,7 @@ public class PuzzleController : ControllerBase
             {
                 case "Themes":
                     PuzzleDTO p = await _puzzleService.GetAsyncRandomByCriteria(criteria, match);
+                    _logger.LogInformation($"\n Returned puzzle:{p.ToString}");
                     return Ok(p);
                 case "Rating":
                     try

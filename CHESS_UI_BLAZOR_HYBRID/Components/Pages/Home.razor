@@ -15,12 +15,6 @@ Welcome to your new app.
     {
         try
         {
-            var puzzles = await LoadPuzzlesFromCacheAsync();
-            if (puzzles.Count < 10)
-            {
-                Console.WriteLine($"Puzzle count after fetch: {puzzles.Count}/10");
-                await PuzzleManager.FetchPuzzles(10 - puzzles.Count);
-            };
             puzzlePreloader();
 
         }catch(Exception ex){
@@ -35,12 +29,14 @@ Welcome to your new app.
             if (cache != null && cache.Count > 0)
             {
                 await PuzzleManager.LoadCachedPuzzleIntoQueue(cache);
+                return;
             }
             else
             {
                 //Default is 10 puzzles, but given input parameter we can fetch more.
                 var puzzles = await PuzzleManager.FetchPuzzles();
                 await puzzleFileWriterAsync(puzzles);
+                return;
             }
         }
         catch(Exception ex)
@@ -51,10 +47,11 @@ Welcome to your new app.
     private async Task puzzleFileWriterAsync(List<PuzzleDTO> puzzles)
     {
         string filePath = Path.Combine(FileSystem.AppDataDirectory, "puzzleSaves.json");
+        Console.WriteLine($"Puzzle save path: {Path.Combine(FileSystem.AppDataDirectory, "puzzleSaves.json")}");
         string json = JsonSerializer.Serialize(puzzles);
         await File.WriteAllTextAsync(filePath, json);
     }
-    private async Task<List<PuzzleDTO>> LoadPuzzlesFromCacheAsync()
+    private async Task<List<PuzzleDTO?>> LoadPuzzlesFromCacheAsync()
     {
         string filePath = Path.Combine(FileSystem.AppDataDirectory, "puzzleSaves.json");
         try
@@ -62,7 +59,8 @@ Welcome to your new app.
             if (File.Exists(filePath))
             {
                 string json = await File.ReadAllTextAsync(filePath);
-                if (!string.IsNullOrWhiteSpace(json)) return JsonSerializer.Deserialize<List<PuzzleDTO>>(json);
+                if (!string.IsNullOrWhiteSpace(json)) 
+                return JsonSerializer.Deserialize<List<PuzzleDTO>>(json);
                 Console.WriteLine($"No puzzle found in cache!");
             }
             return null;
