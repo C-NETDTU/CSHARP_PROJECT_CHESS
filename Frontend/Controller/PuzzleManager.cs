@@ -127,6 +127,7 @@ namespace Frontend.Controller
                 }
             }catch(Exception ex) { _logger.LogError($"Err: {ex}"); }
         }
+
         public async Task FetchAndLoadPuzzle()
         {
             try
