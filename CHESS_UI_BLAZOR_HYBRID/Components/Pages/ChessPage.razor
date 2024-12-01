@@ -29,9 +29,10 @@ else
 }
 
 @code {
-private bool _isGameActive = false;
-
-private async Task StartSurvival()
+    private bool _isGameActive = false;
+    private bool _firstRender = true;
+    
+    private async Task StartSurvival()
 {
 try
 {

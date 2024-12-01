@@ -6,7 +6,8 @@ using Frontend.Model.ChessBoard;
 using Frontend.Model.ChessMove;
 using Frontend.Model.ChessPiece;
 using Shared.DTO;
-
+using Frontend.Services;
+using Microsoft.Extensions.Logging;
 
 namespace Frontend.Controller
 {
@@ -15,6 +16,8 @@ namespace Frontend.Controller
         public ApiManager ApiManager;
         public GameManager? GameManager;
         private ConcurrentQueue<PuzzleDTO> puzzleQueue;
+        private readonly IFileStorageService _storageService;
+        private readonly ILogger _logger;
         public int strikes;
         private int maxStrikes = 3;
         public int score;
@@ -25,9 +28,11 @@ namespace Frontend.Controller
 
         public event Action? OnPuzzleLoaded;
 
-        public PuzzleManager(ApiManager apiManager)
+        public PuzzleManager(ApiManager apiManager, IFileStorageService fileStorageService, ILogger<PuzzleManager> logger)
         {
             ApiManager = apiManager;
+            _storageService = fileStorageService;
+            _logger = logger;
             puzzleQueue = new ConcurrentQueue<PuzzleDTO>();
             score = 0;
             strikes = 0;
@@ -35,106 +40,124 @@ namespace Frontend.Controller
             maxStreak = 0;
         }
 
-        public void Initialize()
+        public async Task Initialize()
         {
             try
-            {
-                var puzzle = new PuzzleDTO
+            {   
+                var cache = await _storageService.LoadAsync<List<PuzzleDTO>>("savedGames.json");
+                if (cache == null || puzzleQueue.Count < 1)
                 {
-                    Id = "1",
-                    PuzzleId = "1",
-                    FEN = "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1",
-                    Moves = "",
-                    Rating = 1000,
-                    Themes = ""
-                };
-
-                GameManager = new GameManager(puzzle.FEN); // Pass the FEN
-                Console.WriteLine("GameManager initialized successfully.");
+                    var fastP = await ApiManager.RetrieveRandomPuzzle();
+                    puzzleQueue.Enqueue(fastP);
+                    var puzzles = await FetchPuzzles();
+                    await _storageService.SaveAsync("savedGames.json", cache);
+                    foreach(var puzzle in puzzles)
+                    {
+                        puzzleQueue.Enqueue(puzzle);
+                    }
+                    return;
+                }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error in PuzzleManager.Initialize: {ex.Message}");
-                throw;
+                _logger.LogError($"Error in PuzzleManager.Initialize: {ex.Message}");
             }
         }
+
+        public async Task<List<PuzzleDTO>> GetQueue(string fileName)
+        {
+            try
+            {
+                var tasks = new List<Task<PuzzleDTO?>>();
+                puzzleQueue.TryGetNonEnumeratedCount(out var count);
+                for (int i = 0; i < count; i++)
+                {
+                    tasks.Add(ApiManager.RetrieveRandomPuzzle());
+                }
+                var puzzles = await Task.WhenAll(tasks);
+                return [.. puzzles];
+
+            }
+            catch (Exception ex) { 
+                _logger.LogError($"Err: {ex}");
+                return new List<PuzzleDTO>();
+            }
+        }
+
         public async Task<List<PuzzleDTO>> FetchPuzzles(int amount = 10)
         {
             try
             {
-                Console.WriteLine("PuzzleManager: Fetching 10 puzzles...");
-                var tasks = new List<Task<PuzzleDTO>>();
+                _logger.LogInformation("PuzzleManager: Fetching 10 puzzles...");
+                var tasks = new List<Task<PuzzleDTO?>>();
                 for (int i = 0; i < amount; i++)
                 {
                     tasks.Add(ApiManager.RetrieveRandomPuzzle());
                 }
                 var puzzles = await Task.WhenAll(tasks);
-                Console.WriteLine($"Puzzles fetched successfully. Total puzzles in queue: {puzzleQueue.Count}");
+                _logger.LogInformation($"Puzzles fetched successfully. Total puzzles in queue: {puzzleQueue.Count}");
+                await _storageService.SaveAsync("savedGames.json",puzzles);
                 return [.. puzzles];
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error fetching puzzles: {ex.Message}");
+                _logger.LogError($"Error fetching puzzles: {ex.Message}");
                 return [];
             }
         }
 
+        //Idea is to call this method and the DequeuePuzzle when a puzzle has been completed.
+        public async Task FetchAndAddPuzzle()
+        {
+            try {
+                var puzzle = await ApiManager.RetrieveRandomPuzzle();
+                puzzleQueue.Enqueue(puzzle);
+            } catch (Exception ex) { _logger.LogError($"Err: {ex}"); }
+        }
+        public async Task DequeuePuzzle()
+        {
+            try
+            {
+                PuzzleDTO puzzle = new PuzzleDTO();
+                await Task.Run(() => { puzzleQueue.TryDequeue(out var puzzle); });
+                if (puzzle != null)
+                {
+                    _logger.LogInformation($"Sucessfully d-q puzzle: {puzzle}");
+                    return;
+                }
+            }catch(Exception ex) { _logger.LogError($"Err: {ex}"); }
+        }
         public async Task FetchAndLoadPuzzle()
         {
             try
             {
-                Console.WriteLine("PuzzleManager: Fetching a puzzle...");
+                _logger.LogInformation("PuzzleManager: Fetching a puzzle...");
                 PuzzleDTO? puzzleDto;
-                if (!puzzleQueue.TryDequeue(out puzzleDto))
+                if (!puzzleQueue.TryPeek(out puzzleDto))
                 {
                     puzzleDto = await ApiManager.RetrieveRandomPuzzle();
-                    Console.WriteLine("Fetched new puzzle from the API.");
+                    _logger.LogInformation("Fetched new puzzle from the API.");
                 }
                 else
                 {
-                    Console.WriteLine("Fetched puzzle from the local queue.");
+                    _logger.LogInformation($"Fetched puzzle from the local queue: {puzzleDto.FEN}");
                 }
                 if (puzzleDto != null)
                 {
-                    Console.WriteLine($"PuzzleManager: Fetched puzzle with FEN: {puzzleDto.FEN}");
+                    _logger.LogInformation($"PuzzleManager: Fetched puzzle with FEN: {puzzleDto.FEN}");
                     GameManager = new GameManager(puzzleDto.FEN);
                     OnPuzzleLoaded?.Invoke(); 
                 }
                 else
                 {
-                    Console.WriteLine("PuzzleManager: No puzzle returned from the API.");
+                    _logger.LogInformation("PuzzleManager: No puzzle returned from the API.");
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"PuzzleManager: Error fetching puzzle: {ex.Message}");
+                _logger.LogError($"PuzzleManager: Error fetching puzzle: {ex.Message}");
             }
         }
 
-        public async Task LoadCachedPuzzleIntoQueue(List<PuzzleDTO> puzzles)
-        {
-            try
-            {
-                if (puzzles != null && puzzles.Count > 0)
-                {
-                    Console.WriteLine("Enqueueing Element from cache.");
-                    await Task.Run(() =>
-                    {
-                        foreach (var puzzle in puzzles)
-                        {
-                            puzzleQueue.Enqueue(puzzle);
-                        }
-                    }
-                    );
-                }
-                else
-                {
-                    Console.WriteLine("No puzzles found in cache...");
-                }
-            }
-            catch (Exception ex) {
-                Console.WriteLine($"err: {ex.Message}");
-            }
-        }
     }
 }

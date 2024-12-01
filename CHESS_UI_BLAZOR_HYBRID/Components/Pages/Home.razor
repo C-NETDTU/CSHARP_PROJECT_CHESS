@@ -9,65 +9,6 @@ Welcome to your new app.
 
 </div>
 
-<!--This is meant to be under the hood, and preload, cache and save puzzles. This should make it faster when starting puzzle-game.-->
 @code {
-    protected override async Task OnInitializedAsync()
-    {
-        try
-        {
-            puzzlePreloader();
-
-        }catch(Exception ex){
-            Console.WriteLine($"err: {ex.Message}");
-        }
-    }
-    private async Task puzzlePreloader(int amount = 0)
-    {
-        try
-        {
-            var cache = await LoadPuzzlesFromCacheAsync();
-            if (cache != null && cache.Count > 0)
-            {
-                await PuzzleManager.LoadCachedPuzzleIntoQueue(cache);
-                return;
-            }
-            else
-            {
-                //Default is 10 puzzles, but given input parameter we can fetch more.
-                var puzzles = await PuzzleManager.FetchPuzzles();
-                await puzzleFileWriterAsync(puzzles);
-                return;
-            }
-        }
-        catch(Exception ex)
-        {
-            Console.WriteLine($"err:{ex.Message}");
-        }
-    }
-    private async Task puzzleFileWriterAsync(List<PuzzleDTO> puzzles)
-    {
-        string filePath = Path.Combine(FileSystem.AppDataDirectory, "puzzleSaves.json");
-        Console.WriteLine($"Puzzle save path: {Path.Combine(FileSystem.AppDataDirectory, "puzzleSaves.json")}");
-        string json = JsonSerializer.Serialize(puzzles);
-        await File.WriteAllTextAsync(filePath, json);
-    }
-    private async Task<List<PuzzleDTO?>> LoadPuzzlesFromCacheAsync()
-    {
-        string filePath = Path.Combine(FileSystem.AppDataDirectory, "puzzleSaves.json");
-        try
-        {
-            if (File.Exists(filePath))
-            {
-                string json = await File.ReadAllTextAsync(filePath);
-                if (!string.IsNullOrWhiteSpace(json)) 
-                return JsonSerializer.Deserialize<List<PuzzleDTO>>(json);
-                Console.WriteLine($"No puzzle found in cache!");
-            }
-            return null;
-        }
-        catch(Exception ex){ 
-            Console.WriteLine($"err: {ex.Message}");
-            return null;
-        }
-    }
+  
 }
