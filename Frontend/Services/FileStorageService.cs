@@ -15,7 +15,7 @@ namespace Frontend.Services
         public FileStorageService(ILogger<FileStorageService> logger) {
             var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
             _appDataDirectory = Path.Combine(appDataPath, "savedPuzzleGames");
-            Directory.CreateDirectory(_appDataDirectory);
+            if (!Directory.Exists(_appDataDirectory)) Directory.CreateDirectory(_appDataDirectory);
             _logger = logger;
         }
         public async Task<T?> LoadAsync<T>(string fileName)
@@ -41,9 +41,17 @@ namespace Frontend.Services
             {
                 var filePath = Path.Combine(_appDataDirectory, fileName);
                 var json = JsonSerializer.Serialize(data, new JsonSerializerOptions { WriteIndented = true });
-                _logger.LogInformation($"directory exists: {Directory.Exists(_appDataDirectory)}");
-                await File.WriteAllTextAsync(filePath, json);
-                _logger.LogInformation($"Saved to: {filePath}");
+                if (Directory.Exists(_appDataDirectory))
+                {
+                    _logger.LogInformation($"directory exists: {Directory.Exists(_appDataDirectory)}");
+                    await File.WriteAllTextAsync(filePath, json);
+                    _logger.LogInformation($"Saved to: {filePath}");
+                }
+                else
+                {
+                    _logger.LogCritical($"Filepath {fileName} does not exists!");
+                }
+
             }
             catch (Exception ex) {
                 _logger.LogCritical($"Failed to save: {data} to filepath {fileName}");

@@ -7,25 +7,35 @@ public partial class App : Application
     private readonly PuzzleManager _puzzleManager;
     private readonly IFileStorageService _fileStorageService;
 
-    public App(PuzzleManager PuzzleManager)
+    public App(PuzzleManager PuzzleManager, IFileStorageService fileStorageService)
     {
         InitializeComponent();
         _puzzleManager = PuzzleManager;
         MainPage = new MainPage();
+        _fileStorageService = fileStorageService;
     }
     protected override void OnStart()
     {
         base.OnStart();
         _puzzleManager.Initialize();
     }
+    protected override void OnResume()
+    {
+        base.OnResume();
+        _puzzleManager?.Initialize();
+    }
     protected override void OnSleep()
     {
         base.OnSleep();
-        _fileStorageService.SaveAsync("savedGames.json", _puzzleManager.GetQueue);
+        Task.Run(async () => {
+            await _fileStorageService.SaveAsync("savedGames.json", _puzzleManager.GetQueue());
+        });
     }
     protected override void CleanUp()
     {
         base.CleanUp();
-        _fileStorageService.SaveAsync("savedGames.json",_puzzleManager.GetQueue);
+        Task.Run(async () => {
+            await _fileStorageService.SaveAsync("savedGames.json", _puzzleManager.GetQueue());
+        });
     }
 }

@@ -21,6 +21,9 @@ public static class MauiProgram
 #if DEBUG
         builder.Services.AddBlazorWebViewDeveloperTools();
         builder.Logging.AddDebug();
+        builder.Services.AddLogging(logging =>
+        logging.AddFilter("Microsoft.AspNetCore.Components.WebView", LogLevel.Trace)
+            );
 #endif
         builder.Services.AddHttpClient<ApiManager>(client =>
         {

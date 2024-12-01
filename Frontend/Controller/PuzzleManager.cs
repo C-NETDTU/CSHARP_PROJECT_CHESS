@@ -45,18 +45,18 @@ namespace Frontend.Controller
             try
             {   
                 var cache = await _storageService.LoadAsync<List<PuzzleDTO>>("savedGames.json");
-                if (cache == null || puzzleQueue.Count < 1)
+                if (cache == null)
                 {
                     var fastP = await ApiManager.RetrieveRandomPuzzle();
                     puzzleQueue.Enqueue(fastP);
-                    var puzzles = await FetchPuzzles();
+                    cache = await FetchPuzzles();
                     await _storageService.SaveAsync("savedGames.json", cache);
-                    foreach(var puzzle in puzzles)
-                    {
-                        puzzleQueue.Enqueue(puzzle);
-                    }
-                    return;
                 }
+                foreach (var puzzle in cache)
+                {
+                    puzzleQueue.Enqueue(puzzle);
+                }
+                return;
             }
             catch (Exception ex)
             {
@@ -64,7 +64,7 @@ namespace Frontend.Controller
             }
         }
 
-        public async Task<List<PuzzleDTO>> GetQueue(string fileName)
+        public async Task<List<PuzzleDTO>> GetQueue()
         {
             try
             {
