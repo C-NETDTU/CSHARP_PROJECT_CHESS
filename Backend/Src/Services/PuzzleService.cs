@@ -59,13 +59,7 @@ public class PuzzleService : IPuzzleService
 
     public async Task<PuzzleDTO?> GetAsyncRandom()
     {
-        /*var pipeline = new BsonDocument[]
-    {
-        new BsonDocument("$sample", new BsonDocument("size", 1))
-    };
-
-        var result = await _puzzlesCollection.Aggregate<Puzzle>(pipeline).FirstOrDefaultAsync();
-        return result;*/
+    
         var result = await _puzzleRepository.GetRandomAsync();
         _logger.LogInformation($"Random puzzle: {result.Id} selected.");
         return new PuzzleDTO(result.Id, result.PuzzleId, result.FEN, result.Moves, result.Rating, result.Themes);

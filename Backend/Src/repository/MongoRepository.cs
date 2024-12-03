@@ -3,8 +3,6 @@ using MongoDB.Driver;
 using MongoDB.Bson;
 
 namespace backend.src.repository;
-
-
 public class MongoRepository<T> : IMongoRepository<T> where T : class
 {
     private readonly IMongoCollection<T> _collection;

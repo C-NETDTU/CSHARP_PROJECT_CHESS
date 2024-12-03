@@ -122,7 +122,7 @@ namespace Frontend.Controller
             gameHistory.Push(newBoard);
             CurrentBoard = gameHistory.Peek();
         }
-
+            
         private ChessDotNet.Move ConvertToChessDotNetMove(BoardMove move)
         {
             var from = move.From.ToString();
