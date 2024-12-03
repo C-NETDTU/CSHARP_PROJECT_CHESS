@@ -1,13 +1,8 @@
-using System;
 using System.Collections.Concurrent;
-using System.Net.Http;
-using System.Threading.Tasks;
-using Frontend.Model.ChessBoard;
-using Frontend.Model.ChessMove;
-using Frontend.Model.ChessPiece;
 using Shared.DTO;
 using Frontend.Services;
 using Microsoft.Extensions.Logging;
+using Frontend.Model.DTO;
 
 namespace Frontend.Controller
 {
@@ -43,20 +38,26 @@ namespace Frontend.Controller
         public async Task Initialize()
         {
             try
-            {   
-                var cache = await _storageService.LoadAsync<List<PuzzleDTO>>("savedGames.json");
-                if (cache == null)
+            {
+                var cacheWrapper = await _storageService.LoadAsync<PuzzleGameState>("savedGames.json");
+
+                if (cacheWrapper != null && cacheWrapper.Puzzles != null)
+                {
+                    foreach (var puzzle in cacheWrapper.Puzzles)
+                    {
+                        puzzleQueue.Enqueue(puzzle);
+                    }
+                    strikes = cacheWrapper.Strikes;
+                    streak = cacheWrapper.Streak;
+                }
+                else
                 {
                     var fastP = await ApiManager.RetrieveRandomPuzzle();
                     puzzleQueue.Enqueue(fastP);
-                    cache = await FetchPuzzles();
-                    await _storageService.SaveAsync("savedGames.json", cache);
+                    var cache = await FetchPuzzles();
+                    var saveData = new PuzzleGameState(cache,strikes, streak);
+                    await _storageService.SaveAsync("savedGames.json", saveData);
                 }
-                foreach (var puzzle in cache)
-                {
-                    puzzleQueue.Enqueue(puzzle);
-                }
-                return;
             }
             catch (Exception ex)
             {
@@ -96,7 +97,6 @@ namespace Frontend.Controller
                 }
                 var puzzles = await Task.WhenAll(tasks);
                 _logger.LogInformation($"Puzzles fetched successfully. Total puzzles in queue: {puzzleQueue.Count}");
-                await _storageService.SaveAsync("savedGames.json",puzzles);
                 return [.. puzzles];
             }
             catch (Exception ex)

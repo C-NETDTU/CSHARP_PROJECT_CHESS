@@ -1,12 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Shared.DTO;
 
 namespace Frontend.Model.DTO
 {
-    internal class PuzzleGameState
+    public class PuzzleGameState
     {
+        public List<PuzzleDTO> Puzzles { get; set; }
+        public int Strikes { get; set; }
+        public int Streak { get; set; }
+
+        public PuzzleGameState(List<PuzzleDTO> puzzles, int strikes, int streak)
+        {
+            Puzzles = puzzles;
+            Strikes = strikes;
+            Streak = streak;
+        }
     }
 }

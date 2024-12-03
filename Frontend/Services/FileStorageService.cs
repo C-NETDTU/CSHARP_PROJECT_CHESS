@@ -27,8 +27,9 @@ namespace Frontend.Services
                 return default;
             }
             var json = await File.ReadAllTextAsync(filePath);
-            if (json == null) { return default; }
-            return JsonSerializer.Deserialize<T>(json);
+            if (string.IsNullOrEmpty(json)) { return default; }
+            var loadedSaveData = JsonSerializer.Deserialize<T>(json);
+            return loadedSaveData;
         }
 
         public async Task SaveAsync<T>(string fileName, T data)
@@ -57,6 +58,7 @@ namespace Frontend.Services
                 _logger.LogCritical($"Failed to save: {data} to filepath {fileName}");
             }
         }
+
         public async Task DeleteAsync(string fileName)
         {
             var filePath = Path.Combine(_appDataDirectory, fileName);
@@ -75,5 +77,6 @@ namespace Frontend.Services
                 _logger.LogCritical($"Failed to delete file {fileName}");
             }
         }
+       
     }
 }
