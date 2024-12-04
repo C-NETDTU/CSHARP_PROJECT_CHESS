@@ -24,10 +24,12 @@
 
 .chessboard-square.light {
     background-color: #f0d9b5;
+    --rank-color: #b58863;
 }
 
 .chessboard-square.dark {
     background-color: #b58863;
+    --rank-color: #f0d9b5;
 }
 
 .chessboard-square img {
@@ -93,4 +95,25 @@
     height: 100%;
     background-color: rgba(255, 255, 0, 0.5); /* Blue with some transparency */
     pointer-events: none; /* Allow clicks to pass through the highlight */
+}
+
+.rank-label{
+    position: absolute;
+    top: 5%; /* Top position */
+    right: 5%; /* Right position */
+    font-size: 0.8em; /* Adjust font size as needed */
+    color: var(--rank-color); /* Ensure visibility */
+    pointer-events: none; /* Prevent interaction */
+}
+
+.file-label{
+    position: absolute;
+    bottom: 5%; /* Align to the absolute bottom */
+    left: 5%; /* Align to the absolute left */
+    margin: 0; /* Ensure no extra spacing */
+    padding: 0; /* Remove default padding */
+    line-height: 1; /* Reset line height to avoid extra spacing */
+    font-size: 0.8em; /* Adjust font size as needed */
+    color: var(--rank-color); /* Ensure visibility */
+    pointer-events: none; /* Prevent interaction */
 }

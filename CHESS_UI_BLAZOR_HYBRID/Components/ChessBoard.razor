@@ -27,7 +27,7 @@
         
                     var onclickFile = file;
                     var onclickRank = rank;
-
+                    
 
                     <div class="chessboard-square @(square.IsDark ? "dark" : "light")" @onclick="() => OnSquareClicked(onclickFile, onclickRank)">
                         @if (_selectedFile == file && _selectedRank == rank)
@@ -95,6 +95,16 @@
                         @if (square.Piece != null)
                         {
                             <img src="@GetPieceImage(square.Piece)" alt="@square.Piece.GetType().Name" />
+                        }
+                        @if ((_isFlipped && file == 1) || (!_isFlipped && file == 8))
+                        {
+                            var rankNumber = square.Position.GetRank().ToString();
+                            <p class="rank-label">@rankNumber</p>
+                        }
+                        @if ((!_isFlipped && rank == 1) || (_isFlipped && rank == 8))
+                        {
+                            var fileLetter = square.Position.GetFileChar().ToString();
+                            <p class="file-label">@fileLetter</p>
                         }
                     </div>
                 }
