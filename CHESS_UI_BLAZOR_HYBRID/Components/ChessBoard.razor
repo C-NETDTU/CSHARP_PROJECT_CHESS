@@ -34,7 +34,7 @@
             {
                 if (square.Piece != null) // If there is a piece on the square
                 {
-                    if (square.Piece.Set == GameManager.CurrentBoard.Turn) // If the piece belongs to the current player
+                    if (square.Piece.Set != _opposingPlayer) // If the piece belongs to the current player
                     {
                         <div class="highlight-overlay"></div>
                     }
@@ -112,16 +112,18 @@
 @code {
 [Parameter]
 public Frontend.Controller.GameManager GameManager { get; set; } // Passed as a parameter
+private Set _opposingPlayer;
 
 protected override void OnInitialized()
 {
     GameManager.OnUserMoveApplied += HandleUserMoveApplied;
+    _opposingPlayer = GameManager.CurrentBoard.Turn;
 }
 
 protected override async Task OnParametersSetAsync()
     {
         Console.WriteLine("ChessBoard: Parameters set, attempting to render.");
-        await Task.Delay(1000);
+        await Task.Delay(9000);
         GameManager.PerformNextMove();
         StateHasChanged(); // Trigger UI update after first move
     }
@@ -143,27 +145,34 @@ private int? _selectedRank;
 private List<BoardMove>? _legalMoves;
 private AppliedMove? _previousMove;
 
-
 private Task OnSquareClicked(int file, int rank)
 {
     _selectedFile = file;
     _selectedRank = rank;
-    
-    var pos = PositionMethods.From(file, rank);
-    Console.WriteLine("Position:" + pos);
-    Console.WriteLine(GameManager.CurrentBoard.Turn.ToString());
-    
-    _legalMoves = GameManager.GetLegalMoves(PositionMethods.From(file, rank));
-    
-    foreach (var boardMove in _legalMoves)
+    if (GameManager.CurrentBoard.Squares[PositionMethods.From(file, rank)].HasPiece(_opposingPlayer) == true)
     {
-        Console.WriteLine($"Legal move: {boardMove.ToString(false)}");
-        var moveFile = FileMethods.GetFileInt(boardMove.To);
-        var moveRank = RankMethods.GetRankInt(boardMove.To);
-        Console.WriteLine("Move file: " + moveFile + " Move rank: " + moveRank);
+        Console.WriteLine("Illegal move: Cannot move opponent's piece");
+        return Task.CompletedTask;
+    }
+    else
+    {
+        var pos = PositionMethods.From(file, rank);
+        Console.WriteLine("Position:" + pos);
+        Console.WriteLine(GameManager.CurrentBoard.Turn.ToString());
+    
+        _legalMoves = GameManager.GetLegalMoves(PositionMethods.From(file, rank));
+    
+        foreach (var boardMove in _legalMoves)
+        {
+            Console.WriteLine($"Legal move: {boardMove.ToString(false)}");
+            var moveFile = FileMethods.GetFileInt(boardMove.To);
+            var moveRank = RankMethods.GetRankInt(boardMove.To);
+            Console.WriteLine("Move file: " + moveFile + " Move rank: " + moveRank);
+        }
+    
+        return Task.CompletedTask;
     }
     
-    return Task.CompletedTask;
 }
 
 
@@ -176,7 +185,7 @@ private Task OnMoveDotClicked(BoardMove boardMove)
     else
     {
         Console.WriteLine("Applying move: " + boardMove.ToString(false));
-        GameManager.ApplyMove(boardMove);
+        GameManager.OnUserMove(boardMove);
         //_previousMove = boardMove;
         _previousMove = GameManager.CurrentBoard.LastMove;
         return Task.CompletedTask;
