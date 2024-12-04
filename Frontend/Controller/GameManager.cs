@@ -109,13 +109,33 @@ namespace Frontend.Controller
             var chessMove = ConvertToChessDotNetMove(move);
             MoveType type = chessGame.MakeMove(chessMove, true);
             var newBoard = move.ApplyOn(CurrentBoard);
-            newBoard.LastMove = new AppliedMove(move);
+
+            var moveEffect = ApplyMoveEffect();
+            newBoard.LastMove = new AppliedMove(move, moveEffect);
             newBoard.Turn = move.Piece.Set.Opposite();
 
             Console.WriteLine($"ApplyMove: Move applied - {move}. Turn before push: {newBoard.Turn}");
 
             gameHistory.Push(newBoard);
             CurrentBoard = gameHistory.Peek();
+        }
+
+        private MoveEffect ApplyMoveEffect()
+        {
+            var isCheck = chessGame.IsInCheck(chessGame.WhoseTurn);
+            var isCheckMate = chessGame.IsCheckmated(chessGame.WhoseTurn);
+
+            if (isCheck)
+            {
+                return MoveEffect.check;
+            }
+
+            if (isCheckMate)
+            {
+                return MoveEffect.checkmate;
+            }
+            
+            return MoveEffect.none;
         }
 
         private ChessDotNet.Move ConvertToChessDotNetMove(BoardMove move)
