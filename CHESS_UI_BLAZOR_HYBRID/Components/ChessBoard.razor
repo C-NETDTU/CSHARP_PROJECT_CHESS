@@ -46,6 +46,8 @@
                 //TODO: Make sure to only highlight legal moves - Check whether there is a piece on the square and whether it is the player's own piece - DONE
                 //TODO: Add logic to move piece - DONE
                 //TODO: Add logic to capture piece - DONE
+                //TODO: Add Highlight for previous move
+                
                 //TODO: Add animation for piece movement
                 //TODO: Add logic to check for checkmate
                 //TODO: Add logic to check for stalemate
@@ -74,6 +76,21 @@
                             <div class="move-dot"></div>
                             <div class="clickable-overlay" @onclick="() => OnMoveDotClicked(boardMove)"></div>
                         }
+                    }
+                }
+                @if(_previousMove != null)
+                {
+                    var moveFile = FileMethods.GetFileInt(_previousMove.To);
+                    var moveRank = RankMethods.GetRankInt(_previousMove.To);
+                    if (moveFile == file && moveRank == rank)
+                    {
+                        <div class="previous-move"></div>
+                    }
+                    var moveFileFrom = FileMethods.GetFileInt(_previousMove.From);
+                    var moveRankFrom = RankMethods.GetRankInt(_previousMove.From);
+                    if (moveFileFrom == file && moveRankFrom == rank)
+                    {
+                        <div class="previous-move"></div>
                     }
                 }
             }
@@ -115,6 +132,7 @@ return $"images/{piece.GetType().Name.ToLower()}_{piece.Set.ToString().ToLower()
 private int? _selectedFile;
 private int? _selectedRank;
 private List<BoardMove>? _legalMoves;
+private AppliedMove? _previousMove;
 
 
 private Task OnSquareClicked(int file, int rank)
@@ -143,6 +161,8 @@ private Task OnSquareClicked(int file, int rank)
 private Task OnMoveDotClicked(BoardMove boardMove)
 {
     GameManager.ApplyMove(boardMove);
+    //_previousMove = boardMove;
+    _previousMove = GameManager.CurrentBoard.LastMove;
     return Task.CompletedTask;
 }
 
