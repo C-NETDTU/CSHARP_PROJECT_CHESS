@@ -1,10 +1,10 @@
 .chessboard {
     display: grid;
-    grid-template-rows: repeat(8, 1fr);
-    grid-template-columns: repeat(8, 1fr);
-    width: 100%;
-    max-width: 700px;
-    aspect-ratio: 1;
+    grid-template-columns: repeat(8, 1fr); /* 8 equal columns */
+    grid-template-rows: repeat(8, 1fr); /* 8 equal rows */
+    width: 50vw; /* Adjust the width to 80% of the viewport width */
+    height: 50vw; /* Maintain square aspect ratio based on width */
+    margin: auto; /* Center the grid */
     border: 2px solid black;
 }
 
@@ -19,21 +19,22 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 2px solid white;
 }
 
 .chessboard-square.light {
     background-color: #f0d9b5;
+    --rank-color: #b58863;
 }
 
 .chessboard-square.dark {
     background-color: #b58863;
+    --rank-color: #f0d9b5;
 }
 
 .chessboard-square img {
     position: relative;
-    max-width: 100%;
-    max-height: 100%;
+    width: 100%;
+    height: 100%;
     pointer-events: none;
 }
 
@@ -83,4 +84,35 @@
     pointer-events: all; /* Ensure it captures clicks */
     cursor: pointer; /* Change cursor to pointer */
     z-index: 2; /* Ensure it’s on top of the square */
+}
+
+.previous-move{
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 0, 0.5); /* Blue with some transparency */
+    pointer-events: none; /* Allow clicks to pass through the highlight */
+}
+
+.rank-label{
+    position: absolute;
+    top: 5%; /* Top position */
+    right: 5%; /* Right position */
+    font-size: 1vw; /* Adjust font size as needed */
+    color: var(--rank-color); /* Ensure visibility */
+    pointer-events: none; /* Prevent interaction */
+}
+
+.file-label{
+    position: absolute;
+    bottom: 5%; /* Align to the absolute bottom */
+    left: 5%; /* Align to the absolute left */
+    margin: 0; /* Ensure no extra spacing */
+    padding: 0; /* Remove default padding */
+    line-height: 1; /* Reset line height to avoid extra spacing */
+    font-size: 1vw; 
+    color: var(--rank-color); /* Ensure visibility */
+    pointer-events: none; /* Prevent interaction */
 }

@@ -51,7 +51,8 @@ else
     {
         try
         {
-            await PuzzleManager.FetchAndLoadPuzzle(); // Initialize PuzzleManager
+            // await PuzzleManager.FetchAndLoadPuzzle(); // Initialize PuzzleManager
+            PuzzleManager.Initialize();
             _isGameActive = true;
         }
         catch (Exception ex)
