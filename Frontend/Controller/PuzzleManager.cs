@@ -43,7 +43,7 @@ namespace Frontend.Controller
 
                 if (cacheWrapper != null && cacheWrapper.Puzzles != null)
                 {
-                    foreach (var puzzle in cacheWrapper.Puzzles)
+                    foreach (var puzzle in cacheWrapper.Puzzles.Where(p => p != null))
                     {
                         puzzleQueue.Enqueue(puzzle);
                     }
@@ -53,8 +53,13 @@ namespace Frontend.Controller
                 else
                 {
                     var fastP = await ApiManager.RetrieveRandomPuzzle();
+                    if (fastP == null) {
+                        _logger.LogCritical("Error in retrieving puzzle. Check connection.");
+                        return;
+                    }
                     puzzleQueue.Enqueue(fastP);
                     var cache = await FetchPuzzles();
+                    cache.Insert(0,fastP);
                     var saveData = new PuzzleGameState(cache,strikes, streak);
                     await _storageService.SaveAsync("savedGames.json", saveData);
                 }
@@ -65,24 +70,21 @@ namespace Frontend.Controller
             }
         }
 
-        public async Task<List<PuzzleDTO>> GetQueue()
+        public List<PuzzleDTO> GetQueue()
         {
-            try
+            var puzzles = new List<PuzzleDTO>();
+            while (puzzleQueue.TryDequeue(out var puzzle))
             {
-                var tasks = new List<Task<PuzzleDTO?>>();
-                puzzleQueue.TryGetNonEnumeratedCount(out var count);
-                for (int i = 0; i < count; i++)
+                if (puzzle != null)
                 {
-                    tasks.Add(ApiManager.RetrieveRandomPuzzle());
+                    puzzles.Add(puzzle);
                 }
-                var puzzles = await Task.WhenAll(tasks);
-                return [.. puzzles];
-
+                else
+                {
+                    _logger.LogWarning("Encountered a null puzzle in the queue.");
+                }
             }
-            catch (Exception ex) { 
-                _logger.LogError($"Err: {ex}");
-                return new List<PuzzleDTO>();
-            }
+            return puzzles;
         }
 
         public async Task<List<PuzzleDTO>> FetchPuzzles(int amount = 10)
@@ -118,8 +120,8 @@ namespace Frontend.Controller
         {
             try
             {
-                PuzzleDTO puzzle = new PuzzleDTO();
-                await Task.Run(() => { puzzleQueue.TryDequeue(out var puzzle); });
+                PuzzleDTO pDTO = new PuzzleDTO();
+                puzzleQueue.TryDequeue(out var puzzle);
                 if (puzzle != null)
                 {
                     _logger.LogInformation($"Sucessfully d-q puzzle: {puzzle}");
@@ -133,10 +135,13 @@ namespace Frontend.Controller
             try
             {
                 _logger.LogInformation("PuzzleManager: Fetching a puzzle...");
-                PuzzleDTO? puzzleDto;
-                if (!puzzleQueue.TryPeek(out puzzleDto))
+                if (!puzzleQueue.TryPeek(out var puzzleDto))
                 {
                     puzzleDto = await ApiManager.RetrieveRandomPuzzle();
+                    if(puzzleDto == null)
+                    {
+                        throw new Exception("Invalid puzzle! Check connection.");
+                    }
                     _logger.LogInformation("Fetched new puzzle from the API.");
                 }
                 else
