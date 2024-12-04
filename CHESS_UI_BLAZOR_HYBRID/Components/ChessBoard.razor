@@ -101,14 +101,11 @@
 public Frontend.Controller.GameManager GameManager { get; set; } // Passed as a parameter
 
 private bool _isFlipped; 
-protected override void OnInitialized()
-{
-    GameManager.OnUserMoveApplied += HandleUserMoveApplied;
-}
 
 protected override async Task OnParametersSetAsync()
     {
         Console.WriteLine("ChessBoard: Parameters set, attempting to render.");
+        GameManager.OnUserMoveApplied += HandleUserMoveApplied;
         _isFlipped = GameManager.CurrentBoard.Turn != Set.Black;
         Console.WriteLine("isFlipped = " + _isFlipped);
         await Task.Delay(1000);
