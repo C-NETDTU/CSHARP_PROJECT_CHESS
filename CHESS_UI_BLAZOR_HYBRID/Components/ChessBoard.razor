@@ -160,9 +160,18 @@ private Task OnSquareClicked(int file, int rank)
 
 private Task OnMoveDotClicked(BoardMove boardMove)
 {
-    GameManager.ApplyMove(boardMove);
-    //_previousMove = boardMove;
-    _previousMove = GameManager.CurrentBoard.LastMove;
+    if (GameManager.CurrentBoard.Turn != boardMove.Piece.Set)
+    {
+        Console.WriteLine("Illegal move: Not the player's turn");
+    }
+    else
+    {
+        Console.WriteLine("Applying move: " + boardMove.ToString(false));
+        GameManager.ApplyMove(boardMove);
+        //_previousMove = boardMove;
+        _previousMove = GameManager.CurrentBoard.LastMove;
+        return Task.CompletedTask;
+    }
     return Task.CompletedTask;
 }
 
