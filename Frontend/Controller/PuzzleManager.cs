@@ -18,8 +18,8 @@ namespace Frontend.Controller
         public int score;
         public int streak;
         private int maxStreak;
-
-        public event Action<bool>? OnPuzzleCompleted;
+        
+        public event Action<bool>? OnSurvialCompleted; 
 
         public event Action? OnPuzzleLoaded;
 
@@ -130,6 +130,16 @@ namespace Frontend.Controller
             }catch(Exception ex) { _logger.LogError($"Err: {ex}"); }
         }
 
+        private List<string> ParseSolutionToList(string solution)
+        {
+            if (string.IsNullOrWhiteSpace(solution))
+                throw new ArgumentException("The solution string cannot be null or empty.", nameof(solution));
+            
+            var solutionList = solution.Split(' ', StringSplitOptions.RemoveEmptyEntries).ToList();
+
+            return solutionList;
+        }
+        
         public async Task FetchAndLoadPuzzle()
         {
             try
@@ -150,9 +160,11 @@ namespace Frontend.Controller
                 }
                 if (puzzleDto != null)
                 {
-                    _logger.LogInformation($"PuzzleManager: Fetched puzzle with FEN: {puzzleDto.FEN}");
-                    GameManager = new GameManager(puzzleDto.FEN);
-                    OnPuzzleLoaded?.Invoke(); 
+                    _logger.LogInformation($"PuzzleManager: Fetched puzzle with FEN: {puzzleDto.FEN} and moves: {puzzleDto.Moves}");
+
+                    var solution = ParseSolutionToList(puzzleDto.Moves);
+                    GameManager = new GameManager(puzzleDto.FEN, solution );
+                    GameManager.OnPuzzleCompleted += HandlePuzzleCompleted;
                 }
                 else
                 {
@@ -162,6 +174,39 @@ namespace Frontend.Controller
             catch (Exception ex)
             {
                 _logger.LogError($"PuzzleManager: Error fetching puzzle: {ex.Message}");
+            }
+        }
+
+        private void HandlePuzzleCompleted(bool success)
+        {
+            try
+            {
+                Console.WriteLine("PuzzleManager: Entered HandlePuzzleCompleted with " + success);
+
+                if (success)
+                {
+                    score++;
+                    OnSurvialCompleted?.Invoke(false);
+                }
+                else
+                {
+                    _logger.LogInformation("PuzzleManager: Updated strike");
+                    strikes++;
+                    if (strikes == maxStrikes)
+                    {
+                        _logger.LogInformation("PuzzleManager: Max strikes reached.");
+                        OnSurvialCompleted?.Invoke(true);
+                    }
+                    else
+                    {
+                        _logger.LogInformation("PuzzleManager: One strike made");
+                        OnSurvialCompleted?.Invoke(false);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogCritical($"PuzzleManager: Exception in HandlePuzzleCompleted - {ex.Message}");
             }
         }
 

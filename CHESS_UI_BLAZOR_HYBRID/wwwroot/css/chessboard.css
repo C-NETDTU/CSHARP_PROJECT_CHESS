@@ -3,7 +3,7 @@
     grid-template-rows: repeat(8, 1fr);
     grid-template-columns: repeat(8, 1fr);
     width: 100%;
-    max-width: 500px;
+    max-width: 700px;
     aspect-ratio: 1;
     border: 2px solid black;
 }
@@ -13,11 +13,13 @@
 }
 
 .chessboard-square {
+    position: relative;
     width: 100%;
     height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
+    border: 2px solid white;
 }
 
 .chessboard-square.light {
@@ -29,7 +31,56 @@
 }
 
 .chessboard-square img {
+    position: relative;
     max-width: 100%;
     max-height: 100%;
-    object-fit: contain;
+    pointer-events: none;
+}
+
+.highlight-overlay{
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: green; /* Yellow with some transparency */
+    pointer-events: none; /* Allow clicks to pass through the highlight */
+}
+
+.turn-status {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.move-dot {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 35%;
+    height: 35%;
+    background-color: darkgreen;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.capture-dot {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: 5px solid green; /* Green border for captures */
+    box-sizing: border-box; /* Ensure border doesn't expand the square */
+    z-index: 1; /* Ensure it renders on top of the square */
+}
+
+.clickable-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%; /* Full width of the square */
+    height: 100%; /* Full height of the square */
+    pointer-events: all; /* Ensure it captures clicks */
+    cursor: pointer; /* Change cursor to pointer */
+    z-index: 2; /* Ensure it’s on top of the square */
 }
