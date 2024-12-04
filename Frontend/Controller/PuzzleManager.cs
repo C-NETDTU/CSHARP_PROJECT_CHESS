@@ -21,8 +21,6 @@ namespace Frontend.Controller
         
         public event Action<bool>? OnSurvialCompleted; 
 
-        public event Action? OnPuzzleLoaded;
-
         public PuzzleManager(ApiManager apiManager, IFileStorageService fileStorageService, ILogger<PuzzleManager> logger)
         {
             ApiManager = apiManager;
@@ -120,14 +118,18 @@ namespace Frontend.Controller
         {
             try
             {
-                PuzzleDTO pDTO = new PuzzleDTO();
-                puzzleQueue.TryDequeue(out var puzzle);
-                if (puzzle != null)
+
+                await Task.Run(() =>
                 {
-                    _logger.LogInformation($"Sucessfully d-q puzzle: {puzzle}");
-                    return;
-                }
-            }catch(Exception ex) { _logger.LogError($"Err: {ex}"); }
+                    PuzzleDTO pDTO = new PuzzleDTO();
+                    puzzleQueue.TryDequeue(out var puzzle);
+                    if (puzzle != null)
+                    {
+                        _logger.LogInformation($"Sucessfully d-q puzzle: {puzzle}");
+                    }
+                });
+            }
+            catch(Exception ex) { _logger.LogError($"Err: {ex}"); }
         }
 
         private List<string> ParseSolutionToList(string solution)
@@ -163,7 +165,7 @@ namespace Frontend.Controller
                     _logger.LogInformation($"PuzzleManager: Fetched puzzle with FEN: {puzzleDto.FEN} and moves: {puzzleDto.Moves}");
 
                     var solution = ParseSolutionToList(puzzleDto.Moves);
-                    GameManager = new GameManager(puzzleDto.FEN, solution );
+                    GameManager = new GameManager(puzzleDto.FEN, solution);
                     GameManager.OnPuzzleCompleted += HandlePuzzleCompleted;
                 }
                 else
