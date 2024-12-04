@@ -33,15 +33,12 @@ public class PuzzleController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<List<PuzzleDTO>>> Get([FromQuery] int pageNumber = 1,[FromQuery] int pageSize = 100)
     {
-        List<Puzzle> puzzles = await _puzzleService.GetAsync(pageNumber,pageSize);
+        List<PuzzleDTO> puzzles = await _puzzleService.GetAsync(pageNumber,pageSize);
         if(puzzles is null)
         {
             return NotFound();
         }
-        List<PuzzleDTO> PuzzleDTOs = new List<PuzzleDTO>();
-        puzzles.ForEach(T => PuzzleDTOs.Add(new PuzzleDTO(T.Id,T.PuzzleId,T.FEN,T.Moves,T.Rating,T.Themes)));
-        if (PuzzleDTOs is null) return NotFound();
-        return Ok(PuzzleDTOs);
+        return Ok(puzzles);
     }
     /// <summary>
     /// Gets a specific puzzle with matching object id.
@@ -57,7 +54,7 @@ public class PuzzleController : ControllerBase
         {
             return NotFound();
         }
-        return Ok(new PuzzleDTO(Puzzle.Id, Puzzle.PuzzleId, Puzzle.FEN, Puzzle.Moves, Puzzle.Rating, Puzzle.Themes));
+        return Ok(Puzzle);
     }
 
 
@@ -124,7 +121,7 @@ public class PuzzleController : ControllerBase
     /// <param name="themes"></param>
     /// <returns></returns>
     [HttpGet("themes")]
-    public async Task<ActionResult<List<Puzzle>>> GetThemes([FromQuery] string themes)
+    public async Task<ActionResult<List<PuzzleDTO>>> GetThemes([FromQuery] string themes)
     {
         var puzzles = await _puzzleService.GetAsyncThemes(themes);
         if (puzzles == null || !puzzles.Any())
@@ -134,9 +131,7 @@ public class PuzzleController : ControllerBase
             return NotFound();
         }
         _logger.LogInformation($"\nFound: {puzzles.Count()} puzzles with themes {themes}\0");
-        List<PuzzleDTO> LPDTO = new List<PuzzleDTO>();
-        puzzles.ForEach(t => LPDTO.Add(new PuzzleDTO(t.Id, t.PuzzleId, t.FEN, t.Moves, t.Rating, t.Themes)));
-        return Ok(LPDTO);
+        return Ok(puzzles);
     }
     /// <summary>
     /// This retrieves a random puzzle with matching criteria and match. Should be able to accept any type.
@@ -145,21 +140,21 @@ public class PuzzleController : ControllerBase
     /// <param name="match"></param>
     /// <returns></returns>
     [HttpGet("random")]
-    public async Task<ActionResult<Puzzle>> GetRandomByCriteria([FromQuery] string? criteria, [FromQuery] string? match)
+    public async Task<ActionResult<PuzzleDTO>> GetRandomByCriteria([FromQuery] string? criteria, [FromQuery] string? match)
     {
         if (criteria != null && match != null)
         {
             switch (criteria)
             {
                 case "Themes":
-                    Puzzle p = await _puzzleService.GetAsyncRandomByCriteria(criteria, match);
-                    return Ok(new PuzzleDTO(p.Id,p.PuzzleId,p.FEN,p.Moves,p.Rating,p.Themes));
+                    PuzzleDTO p = await _puzzleService.GetAsyncRandomByCriteria(criteria, match);
+                    return Ok(p);
                 case "Rating":
                     try
                     {
                         Int32.TryParse(match, out int matchInt);
-                        Puzzle pint = await _puzzleService.GetAsyncRandomByCriteria(criteria, matchInt);
-                        return Ok(new PuzzleDTO(pint.Id, pint.PuzzleId, pint.FEN, pint.Moves, pint.Rating, pint.Themes));
+                        PuzzleDTO pint = await _puzzleService.GetAsyncRandomByCriteria(criteria, matchInt);
+                        return Ok(pint);
                     }
                     catch (Exception ex)
                     {
@@ -169,8 +164,8 @@ public class PuzzleController : ControllerBase
                 case "FEN":
                     match = Uri.UnescapeDataString(match);
                     _logger.LogInformation($"\n Decoded: {match}\0");
-                    Puzzle pfen = await _puzzleService.GetAsyncRandomByCriteria(criteria, match);
-                    return Ok(new PuzzleDTO(pfen.Id, pfen.PuzzleId, pfen.FEN, pfen.Moves, pfen.Rating, pfen.Themes));
+                    PuzzleDTO pfen = await _puzzleService.GetAsyncRandomByCriteria(criteria, match);
+                    return Ok(pfen);
                 default:
                     _logger.LogError("\n Escaped switch-case. Criteria possibly non-existant.\0");
                     return BadRequest();
@@ -184,7 +179,7 @@ public class PuzzleController : ControllerBase
     /// <param name="rating"></param>
     /// <returns></returns>
     [HttpGet("rating")]
-    public async Task<ActionResult<List<Puzzle>>> GetRating([FromQuery] Int32 rating)
+    public async Task<ActionResult<List<PuzzleDTO>>> GetRating([FromQuery] Int32 rating)
     {
         var puzzles = await _puzzleService.GetAsyncRating(rating);
         if (puzzles == null || !puzzles.Any()) {
@@ -192,8 +187,6 @@ public class PuzzleController : ControllerBase
             return NotFound();
         }
         _logger.LogInformation($"\nFound: {puzzles.Count()} puzzles with rating {rating}\0");
-        List<PuzzleDTO> LPDTO = new List<PuzzleDTO>();
-        puzzles.ForEach(t => LPDTO.Add(new PuzzleDTO(t.Id, t.PuzzleId, t.FEN, t.Moves, t.Rating, t.Themes)));
-        return Ok(LPDTO);
+        return Ok(puzzles);
     }
 }

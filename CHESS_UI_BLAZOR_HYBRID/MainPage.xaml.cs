@@ -1,4 +1,6 @@
-﻿namespace CHESS_UI_BLAZOR_HYBRID;
+﻿using Microsoft.Maui.Controls;
+
+namespace CHESS_UI_BLAZOR_HYBRID;
 
 public partial class MainPage : ContentPage
 {
