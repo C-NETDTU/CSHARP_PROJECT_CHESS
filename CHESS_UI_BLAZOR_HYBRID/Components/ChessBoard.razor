@@ -123,7 +123,7 @@ protected override void OnInitialized()
 protected override async Task OnParametersSetAsync()
     {
         Console.WriteLine("ChessBoard: Parameters set, attempting to render.");
-        await Task.Delay(9000);
+        await Task.Delay(4500);
         GameManager.PerformNextMove();
         StateHasChanged(); // Trigger UI update after first move
     }
