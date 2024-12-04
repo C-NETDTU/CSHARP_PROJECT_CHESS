@@ -67,6 +67,10 @@ public class PuzzleService : IPuzzleService
     public async Task<PuzzleDTO?> GetAsyncRandomByCriteria<T>(string criteria, T match)
     {
         var result = await _puzzleRepository.GetRandomByCriteriaAsync<T>(criteria, match);
+        if (result == null) {
+            _logger.LogError($"No puzzle found matching criteria: {criteria}, and match: {match}");
+            return null;
+        }
         PuzzleDTO pDTO = new PuzzleDTO(result.Id, result.PuzzleId, result.FEN, result.Moves, result.Rating, result.Themes);
         _logger.LogInformation($"Matched {criteria} and {match} to random puzzle: {pDTO.Id}");
         return pDTO;

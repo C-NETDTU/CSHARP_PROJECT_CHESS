@@ -148,6 +148,10 @@ public class PuzzleController : ControllerBase
             {
                 case "Themes":
                     PuzzleDTO p = await _puzzleService.GetAsyncRandomByCriteria(criteria, match);
+                    if (p == null) {
+                        _logger.LogError($"Invalid puzzle, puzzle null. Maybe criteria or match is not valid?");
+                        return NotFound();
+                    }
                     _logger.LogInformation($"\n Returned puzzle:{p.ToString}");
                     return Ok(p);
                 case "Rating":
@@ -155,6 +159,10 @@ public class PuzzleController : ControllerBase
                     {
                         Int32.TryParse(match, out int matchInt);
                         PuzzleDTO pint = await _puzzleService.GetAsyncRandomByCriteria(criteria, matchInt);
+                        if (pint == null) {
+                            _logger.LogError($"Invalid crieria or match int. Check validity.");
+                            return NotFound();
+                        }
                         return Ok(pint);
                     }
                     catch (Exception ex)
@@ -166,6 +174,10 @@ public class PuzzleController : ControllerBase
                     match = Uri.UnescapeDataString(match);
                     _logger.LogInformation($"\n Decoded: {match}\0");
                     PuzzleDTO pfen = await _puzzleService.GetAsyncRandomByCriteria(criteria, match);
+                    if (pfen == null) {
+                        _logger.LogError($"Invalid criteria or FEN match. Check validity. FEN: {match}");
+                        return NotFound();
+                    }
                     return Ok(pfen);
                 default:
                     _logger.LogError("\n Escaped switch-case. Criteria possibly non-existant.\0");
