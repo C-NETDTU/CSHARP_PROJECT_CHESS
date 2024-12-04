@@ -65,45 +65,45 @@
                                 {
                                     if (boardMove.PreMove != null)
                                     {
-                            
+
                                         <div class="capture-dot" @onclick="() => OnMoveDotClicked(boardMove)"></div>
-                            
+
+                                    }
+                                    else
+                                    {
+                                        <div class="move-dot"></div>
+                                        <div class="clickable-overlay" @onclick="() => OnMoveDotClicked(boardMove)"></div>
+                                    }
+                                }
                             }
-                            else
+                            @if(_previousMove != null)
                             {
-                                <div class="move-dot"></div>
-                                <div class="clickable-overlay" @onclick="() => OnMoveDotClicked(boardMove)"></div>
+                                var moveFile = FileMethods.GetFileInt(_previousMove.To);
+                                var moveRank = RankMethods.GetRankInt(_previousMove.To);
+                                if (moveFile == file && moveRank == rank)
+                                {
+                                    <div class="previous-move"></div>
+                                }
+                                var moveFileFrom = FileMethods.GetFileInt(_previousMove.From);
+                                var moveRankFrom = RankMethods.GetRankInt(_previousMove.From);
+                                if (moveFileFrom == file && moveRankFrom == rank)
+                                {
+                                    <div class="previous-move"></div>
+                                }
                             }
                         }
-                    }
-                    @if(_previousMove != null)
-                    {
-                        var moveFile = FileMethods.GetFileInt(_previousMove.To);
-                        var moveRank = RankMethods.GetRankInt(_previousMove.To);
-                        if (moveFile == file && moveRank == rank)
+                        @if (square.Piece != null)
                         {
-                            <div class="previous-move"></div>
+                            <img src="@GetPieceImage(square.Piece)" alt="@square.Piece.GetType().Name" />
                         }
-                        var moveFileFrom = FileMethods.GetFileInt(_previousMove.From);
-                        var moveRankFrom = RankMethods.GetRankInt(_previousMove.From);
-                        if (moveFileFrom == file && moveRankFrom == rank)
-                        {
-                            <div class="previous-move"></div>
-                        }
-                    }
-                }
-                @if (square.Piece != null)
-                {
-                    <img src="@GetPieceImage(square.Piece)" alt="@square.Piece.GetType().Name" />
+                    </div>
                 }
             </div>
-            }
-        </div>
         }
     }
     else
     {
-    <p>Loading board...</p>
+        <p>Loading board...</p>
     }
 </div>
 <div>
