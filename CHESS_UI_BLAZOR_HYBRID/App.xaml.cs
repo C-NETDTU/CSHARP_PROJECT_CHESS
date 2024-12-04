@@ -17,12 +17,14 @@ public partial class App : Application
     protected override void OnStart()
     {
         base.OnStart();
-        _puzzleManager.Initialize();
+        Task.Run(() =>
+        {
+            _puzzleManager.Initialize();
+        });
     }
     protected override void OnResume()
     {
         base.OnResume();
-        _puzzleManager?.Initialize();
     }
     protected override void OnSleep()
     {

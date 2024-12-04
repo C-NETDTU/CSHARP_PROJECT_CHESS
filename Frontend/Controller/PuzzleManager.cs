@@ -118,7 +118,6 @@ namespace Frontend.Controller
         {
             try
             {
-
                 await Task.Run(() =>
                 {
                     PuzzleDTO pDTO = new PuzzleDTO();
