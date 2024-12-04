@@ -96,7 +96,12 @@
 [Parameter]
 public Frontend.Controller.GameManager GameManager { get; set; } // Passed as a parameter
 
-    protected override async Task OnParametersSetAsync()
+protected override void OnInitialized()
+{
+    GameManager.OnUserMoveApplied += HandleUserMoveApplied;
+}
+
+protected override async Task OnParametersSetAsync()
     {
         Console.WriteLine("ChessBoard: Parameters set, attempting to render.");
         await Task.Delay(1000);
@@ -148,6 +153,22 @@ private Task OnMoveDotClicked(BoardMove boardMove)
 {
     GameManager.OnUserMove(boardMove);
     return Task.CompletedTask;
+}
+
+private async void HandleUserMoveApplied()
+{
+    Console.WriteLine("Event triggered from GameManager - UserMove has been applied");
+    try
+    {
+        await Task.Delay(1000);
+        GameManager.PerformNextMove();
+        StateHasChanged();
+    }
+    catch (Exception e)
+    {
+        Console.WriteLine(e);
+        throw;
+    }
 }
 
 }

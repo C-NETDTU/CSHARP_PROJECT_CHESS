@@ -18,8 +18,7 @@ namespace Frontend.Controller
         public Board CurrentBoard { get; private set; }
 
         public Set CurrentTurn => CurrentBoard.Turn;
-
-        public event Action<bool>? OnCorrectMove;
+        
         public event Action<bool>? OnPuzzleCompleted;
         public event Action? OnUserMoveApplied;
 
@@ -36,7 +35,9 @@ namespace Frontend.Controller
             {
                 Console.WriteLine($"Piece: {piece.Value.GetType().Name} at {piece.Key}");
             }
-            this.solutionMoves = ParseSolutionMoves(solutionMoves);
+
+            var tempMoves = ParseSolutionMoves(solutionMoves);
+            this.solutionMoves = tempMoves;
             //debug
             Console.WriteLine($"Parsed solution moves: {solutionMoves.Count}");
             foreach (var move in this.solutionMoves)
@@ -77,13 +78,13 @@ namespace Frontend.Controller
                     Console.WriteLine("No solution moves available - puzzle completed");
                     OnPuzzleCompleted?.Invoke(true);
                 }
+                OnUserMoveApplied?.Invoke();
             }  
             else
             {
                 Console.WriteLine("User move is incorrect.");
                 OnPuzzleCompleted?.Invoke(false); 
             }
-            OnUserMoveApplied?.Invoke();
         }
 
         public List<BoardMove> GetLegalMoves(ChessPosition customPosition)
@@ -132,16 +133,18 @@ namespace Frontend.Controller
 
         private Queue<BoardMove> ParseSolutionMoves(List<string> solutionMoves)
         {
+            var tempBoard = new Board(CurrentBoard.Pieces, CurrentBoard.Turn);
             Queue<BoardMove> parsedMoves = new();
             foreach (var move in solutionMoves)
             {
-                var boardMove = ConvertSolutionMoveToBoardMove(move);
+                var boardMove = ConvertSolutionMoveToBoardMove(move, tempBoard);
+                tempBoard = boardMove.ApplyOn(tempBoard);
                 parsedMoves.Enqueue(boardMove);
             }
             return parsedMoves;
         }
 
-        private BoardMove ConvertSolutionMoveToBoardMove(string move)
+        private BoardMove ConvertSolutionMoveToBoardMove(string move, Board board)
         {
             if (move.Length != 4)
             {
@@ -154,7 +157,7 @@ namespace Frontend.Controller
             var from = PositionMethods.FromString(fromPositon[0].ToString(), fromPositon[1].ToString());
             var to = PositionMethods.FromString(toPosition[0].ToString(), toPosition[1].ToString());
 
-            var piece = CurrentBoard.Pieces[from];
+            var piece = board.Pieces[from];
 
             IPrimaryMove primaryMove = new Model.ChessMove.Move(piece, from, to);
             IPreMove? preMove = null;
@@ -175,19 +178,19 @@ namespace Frontend.Controller
                 if (Math.Abs(to.GetFile() - from.GetFile()) == 1 && CurrentBoard[to].IsEmpty)
                 {
                     var enPassantPosition = PositionMethods.From(to.GetFile(), from.GetRank());
-                    var capturedPiece = CurrentBoard[enPassantPosition].Piece;
+                    var capturedPiece = board[enPassantPosition].Piece;
 
                     if (capturedPiece is Model.ChessPiece.Pawn && capturedPiece.Set != piece.Set)
                     {
                         preMove = new Capture(piece, enPassantPosition);
                     }
                 }
-                else if (CurrentBoard[to].IsNotEmpty)
+                else if (board[to].IsNotEmpty)
                 {
                     preMove = new Capture(piece, to);
                 }
             }
-            else if (CurrentBoard[to].IsNotEmpty)
+            else if (board[to].IsNotEmpty)
             {
                 preMove = new Capture(piece, to);
             }

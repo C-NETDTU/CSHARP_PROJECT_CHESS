@@ -39,13 +39,13 @@ namespace Frontend.Controller
                 {
                     Id = "1",
                     PuzzleId = "1",
-                    FEN = "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1",
-                    Moves = "",
+                    FEN = "3r2k1/1p1B1ppp/p7/3p4/P2P4/4P3/5PPP/2R3K1 b - - 0 22",
+                    Moves = "d8d7 c1c8 d7d8 c8d8",
                     Rating = 1000,
                     Themes = ""
                 };
                 
-                var solutionMoves = ParseSolutionToList(puzzle.Themes);
+                var solutionMoves = ParseSolutionToList(puzzle.Moves);
 
                 GameManager = new GameManager(puzzle.FEN, solutionMoves); // Pass the FEN
                 Console.WriteLine("GameManager initialized successfully.");
