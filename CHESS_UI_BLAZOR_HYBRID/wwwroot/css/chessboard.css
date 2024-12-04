@@ -100,7 +100,7 @@
     position: absolute;
     top: 5%; /* Top position */
     right: 5%; /* Right position */
-    font-size: 1em; /* Adjust font size as needed */
+    font-size: 1vw; /* Adjust font size as needed */
     color: var(--rank-color); /* Ensure visibility */
     pointer-events: none; /* Prevent interaction */
 }
@@ -112,7 +112,7 @@
     margin: 0; /* Ensure no extra spacing */
     padding: 0; /* Remove default padding */
     line-height: 1; /* Reset line height to avoid extra spacing */
-    font-size: 1em;                                                             /* MAKE THIS SCALABLE */ 
+    font-size: 1vw; 
     color: var(--rank-color); /* Ensure visibility */
     pointer-events: none; /* Prevent interaction */
 }
