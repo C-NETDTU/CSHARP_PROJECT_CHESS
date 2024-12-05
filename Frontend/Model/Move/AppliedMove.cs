@@ -15,7 +15,7 @@ namespace Frontend.Model.ChessMove
         public AppliedMove(BoardMove boardMove, MoveEffect? effect = null)
         {
             BoardMove = boardMove;
-            Effect = effect ?? MoveEffect.None;
+            Effect = effect ?? MoveEffect.none;
         }
 
         public override string ToString()
@@ -29,9 +29,9 @@ namespace Frontend.Model.ChessMove
 
             string postFix = Effect switch
             {
-                MoveEffect.Check => "+",
-                MoveEffect.Checkmate => $"#  {(Piece.Set == Set.White ? "1-0" : "0-1")}",
-                MoveEffect.Draw => "  ½ - ½",
+                MoveEffect.check => "+",
+                MoveEffect.checkmate => $"#  {(Piece.Set == Set.White ? "1-0" : "0-1")}",
+                MoveEffect.draw => "  ½ - ½",
                 _ => ""
             };
 

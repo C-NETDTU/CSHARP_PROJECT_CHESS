@@ -23,6 +23,11 @@ namespace Frontend.Model.ChessBoard
         {
             return (Position)((int)file * 8 + (int)rank);
         }
+        
+        public static int GetFileInt(this Position position)
+        {
+            return ((int)position / 8) + 1;
+        }
 
         // Method to validate the rank
         private static void ValidateRank(int rank)

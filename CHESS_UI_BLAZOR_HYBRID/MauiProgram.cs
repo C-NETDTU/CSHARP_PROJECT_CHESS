@@ -1,5 +1,7 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System;
+using Microsoft.Extensions.Logging;
 using Frontend.Controller;
+using Frontend.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Hosting;
@@ -20,6 +22,9 @@ public static class MauiProgram
 #if DEBUG
         builder.Services.AddBlazorWebViewDeveloperTools();
         builder.Logging.AddDebug();
+        builder.Services.AddLogging(logging =>
+        logging.AddFilter("Microsoft.AspNetCore.Components.WebView", LogLevel.Trace)
+            );
 #endif
         builder.Services.AddHttpClient<ApiManager>(client =>
         {
@@ -27,6 +32,7 @@ public static class MauiProgram
         });
         builder.Services.AddSingleton<PuzzleManager>();
         builder.Services.AddTransient<GameManager>();
+        builder.Services.AddTransient<IFileStorageService, FileStorageService>();
         return builder.Build();
     }
 }

@@ -1,40 +1,144 @@
 @using Frontend.Model.ChessBoard
+@using Frontend.Model.ChessMove
 @using Frontend.Model.ChessPiece
+
+<div class="turn-status">
+    @if(GameManager?.CurrentBoard != null)
+    {
+        <p>@GameManager.CurrentBoard.Turn.ToString()'s turn to move</p>
+    }
+    else
+    {
+        <p>Loading turn status...</p>
+    }
+    
+</div>
 
 <div class="chessboard">
     @if (GameManager?.CurrentBoard != null) // Ensure CurrentBoard is not null
     {
-    @for (int rank = 8; rank >= 1; rank--)
-    {
-    <div class="chessboard-row">
-        @for (int file = 1; file <= 8; file++)
+        @for (int rank = (_isFlipped ? 1 : 8); (_isFlipped ? rank <= 8 : rank >= 1); rank += (_isFlipped ? 1 : -1))
         {
-        var position = PositionMethods.From(file, rank);
-        var square = GameManager.CurrentBoard.Squares[position];
-        <div class="chessboard-square @(square.IsDark ? "dark" : "light")">
-            @if (square.Piece != null)
-            {
-            <img src="@GetPieceImage(square.Piece)" alt="@square.Piece.GetType().Name" />
-            }
-        </div>
+            <div class="chessboard-row">
+                @for (int file = (_isFlipped ? 8 : 1); (_isFlipped ? file >= 1 : file <= 8); file += (_isFlipped ? -1 : 1))
+                {
+                    var position = PositionMethods.From(file, rank);
+                    var square = GameManager.CurrentBoard.Squares[position];
+        
+                    var onclickFile = file;
+                    var onclickRank = rank;
+                    
+
+                    <div class="chessboard-square @(square.IsDark ? "dark" : "light")" @onclick="() => OnSquareClicked(onclickFile, onclickRank)">
+                        @if (_selectedFile == file && _selectedRank == rank)
+                        {
+                            if (square.Piece != null) // If there is a piece on the square
+                            {
+                                if (square.Piece.Set != _opposingPlayer) // If the piece belongs to the current player
+                                {
+                                    <div class="highlight-overlay"></div>
+                                }
+                            }
+        
+                
+                            //TODO: Add logic to highlight possible moves - DONE
+                            //TODO: Add dot to indicate possible moves - DONE
+                            //TODO: Make sure to only highlight legal moves - Check whether there is a piece on the square and whether it is the player's own piece - DONE
+                            //TODO: Add logic to move piece - DONE
+                            //TODO: Add logic to capture piece - DONE
+                            //TODO: Add animation for piece movement
+                            //TODO: Add logic to check for checkmate
+                            //TODO: Add logic to check for stalemate
+                            //TODO: Add logic to check for draw
+                            //TODO: Add logic to promote pawn
+                            //TODO: Look into move history
+                            //TODO: Undo move
+                
+                        }
+                        @if (_legalMoves != null)
+                        {
+                            foreach (var boardMove in _legalMoves)
+                            {
+                                var moveFile = FileMethods.GetFileInt(boardMove.To);
+                                var moveRank = RankMethods.GetRankInt(boardMove.To);
+                                if (moveFile == file && moveRank == rank)
+                                {
+                                    if (boardMove.PreMove != null)
+                                    {
+
+                                        <div class="capture-dot" @onclick="() => OnMoveDotClicked(boardMove)"></div>
+
+                                    }
+                                    else
+                                    {
+                                        <div class="move-dot"></div>
+                                        <div class="clickable-overlay" @onclick="() => OnMoveDotClicked(boardMove)"></div>
+                                    }
+                                }
+                            }
+                            @if(_previousMove != null)
+                            {
+                                var moveFile = FileMethods.GetFileInt(_previousMove.To);
+                                var moveRank = RankMethods.GetRankInt(_previousMove.To);
+                                if (moveFile == file && moveRank == rank)
+                                {
+                                    <div class="previous-move"></div>
+                                }
+                                var moveFileFrom = FileMethods.GetFileInt(_previousMove.From);
+                                var moveRankFrom = RankMethods.GetRankInt(_previousMove.From);
+                                if (moveFileFrom == file && moveRankFrom == rank)
+                                {
+                                    <div class="previous-move"></div>
+                                }
+                            }
+                        }
+                        @if (square.Piece != null)
+                        {
+                            <img src="@GetPieceImage(square.Piece)" alt="@square.Piece.GetType().Name" />
+                        }
+                        @if ((_isFlipped && file == 1) || (!_isFlipped && file == 8))
+                        {
+                            var rankNumber = square.Position.GetRank().ToString();
+                            <p class="rank-label">@rankNumber</p>
+                        }
+                        @if ((!_isFlipped && rank == 1) || (_isFlipped && rank == 8))
+                        {
+                            var fileLetter = square.Position.GetFileChar().ToString();
+                            <p class="file-label">@fileLetter</p>
+                        }
+                    </div>
+                }
+            </div>
         }
-    </div>
-    }
     }
     else
     {
-    <p>Loading board...</p>
+        <p>Loading board...</p>
     }
 </div>
+<div>
+    <button @onclick="() => ToggleBoardFlip()">Flip Board</button>
+</div>
+
 
 @code {
 [Parameter]
 public Frontend.Controller.GameManager GameManager { get; set; } // Passed as a parameter
+private Set _opposingPlayer;
 
-    protected override void OnParametersSet()
+private bool _isFlipped; 
+
+protected override async Task OnParametersSetAsync()
     {
         Console.WriteLine("ChessBoard: Parameters set, attempting to render.");
+        GameManager.OnUserMoveApplied += HandleUserMoveApplied;
+        _isFlipped = GameManager.CurrentBoard.Turn != Set.Black;
+        Console.WriteLine("isFlipped = " + _isFlipped);
+        await Task.Delay(1000);
+        GameManager.PerformNextMove();
+        StateHasChanged(); // Trigger UI update after first move
     }
+
 
 private string GetPieceImage(IPiece piece)
 {
@@ -42,7 +146,84 @@ private string GetPieceImage(IPiece piece)
 var filePath = $"images/{piece.GetType().Name.ToLower()}_{piece.Set.ToString().ToLower()}.svg";
 
     // Print the file path to the console for debugging
-    Console.WriteLine("File path: " + filePath);
+    // Console.WriteLine("File path: " + filePath);
 return $"images/{piece.GetType().Name.ToLower()}_{piece.Set.ToString().ToLower()}.svg";
 }
+
+
+private int? _selectedFile;
+private int? _selectedRank;
+private List<BoardMove>? _legalMoves;
+private AppliedMove? _previousMove;
+
+private Task OnSquareClicked(int file, int rank)
+{
+    _selectedFile = file;
+    _selectedRank = rank;
+    if (GameManager.CurrentBoard.Squares[PositionMethods.From(file, rank)].HasPiece(_opposingPlayer) == true)
+    {
+        Console.WriteLine("Illegal move: Cannot move opponent's piece");
+        return Task.CompletedTask;
+    }
+    else
+    {
+        var pos = PositionMethods.From(file, rank);
+        Console.WriteLine("Position:" + pos);
+        Console.WriteLine(GameManager.CurrentBoard.Turn.ToString());
+    
+        _legalMoves = GameManager.GetLegalMoves(PositionMethods.From(file, rank));
+    
+        foreach (var boardMove in _legalMoves)
+        {
+            Console.WriteLine($"Legal move: {boardMove.ToString(false)}");
+            var moveFile = FileMethods.GetFileInt(boardMove.To);
+            var moveRank = RankMethods.GetRankInt(boardMove.To);
+            Console.WriteLine("Move file: " + moveFile + " Move rank: " + moveRank);
+        }
+    
+        return Task.CompletedTask;
+    }
+    
+}
+
+
+private Task OnMoveDotClicked(BoardMove boardMove)
+{
+    if (GameManager.CurrentBoard.Turn != boardMove.Piece.Set)
+    {
+        Console.WriteLine("Illegal move: Not the player's turn");
+    }
+    else
+    {
+        Console.WriteLine("Applying move: " + boardMove.ToString(false));
+        GameManager.OnUserMove(boardMove);
+        //_previousMove = boardMove;
+        _previousMove = GameManager.CurrentBoard.LastMove;
+        return Task.CompletedTask;
+    }
+    return Task.CompletedTask;
+}
+
+private async void HandleUserMoveApplied()
+{
+    Console.WriteLine("Event triggered from GameManager - UserMove has been applied");
+    try
+    {
+        await Task.Delay(1000);
+        GameManager.PerformNextMove();
+        StateHasChanged();
+    }
+    catch (Exception e)
+    {
+        Console.WriteLine(e);
+        throw;
+    }
+}
+
+private void ToggleBoardFlip()
+{
+    _isFlipped = !_isFlipped;
+    StateHasChanged();
+}
+
 }

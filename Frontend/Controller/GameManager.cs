@@ -18,13 +18,12 @@ namespace Frontend.Controller
         public Board CurrentBoard { get; private set; }
 
         public Set CurrentTurn => CurrentBoard.Turn;
-
+        
         public event Action<bool>? OnPuzzleCompleted;
-        public event Action<BoardMove>? OnMovePerformed;
-        public event Action? OnUserTurn;
+        public event Action? OnUserMoveApplied;
 
         //This constructor will make a chessGame with the initial board position
-        public GameManager(string fen)
+        public GameManager(string fen, List<string> solutionMoves)
         {
 
             chessGame = new ChessGame(fen);
@@ -37,21 +36,17 @@ namespace Frontend.Controller
                 Console.WriteLine($"Piece: {piece.Value.GetType().Name} at {piece.Key}");
             }
 
+            var tempMoves = ParseSolutionMoves(solutionMoves);
+            this.solutionMoves = tempMoves;
+            //debug
+            Console.WriteLine($"Parsed solution moves: {solutionMoves.Count}");
+            foreach (var move in this.solutionMoves)
+            {
+                Console.WriteLine(move);
+            }
+
         }
-        /*
-        public GameManager(string fen, List<string> solutionMoves)
-        {
-            chessGame = new ChessGame(fen);
-            gameHistory = new Stack<Board>();
-
-            var (pieces, turn) = FenToDictionary(fen);
-            CurrentBoard = new Board(pieces, turn);
-
-            this.solutionMoves = ParseSolutionMoves(solutionMoves);
-
-            PerformNextMove();
-        }
-        */
+        
 
         public void PerformNextMove()
         {
@@ -59,10 +54,6 @@ namespace Frontend.Controller
             {
                 var nextMove = solutionMoves.Dequeue();
                 ApplyMove(nextMove);
-
-                OnMovePerformed?.Invoke(nextMove); // Here we notify the UI that a move has been performed by the GameManager
-
-                OnUserTurn?.Invoke(); // Here we notify the UI that it is the user's turn to make a move    
             }
         }
 
@@ -72,24 +63,27 @@ namespace Frontend.Controller
             {
                 throw new InvalidOperationException("No solution moves available.");
             }
+            Console.WriteLine($"User moved: {userMove}. Expected: {solutionMoves.Peek()}.");
+            ApplyMove(userMove);
+            
             var expectedMove = solutionMoves.Peek();
-            if (userMove.Equals(expectedMove))
+            Console.WriteLine(userMove.ToString().Equals(expectedMove.ToString()));
+            if (userMove.From == expectedMove.From && userMove.To == expectedMove.To)
             {
-                ApplyMove(userMove);
+                Console.WriteLine("User move is correct.");
                 solutionMoves.Dequeue();
 
-                if (solutionMoves.Count > 0)
+                if (solutionMoves.Count == 0)
                 {
-                    PerformNextMove();
+                    Console.WriteLine("No solution moves available - puzzle completed");
+                    OnPuzzleCompleted?.Invoke(true);
                 }
-                else
-                {
-                    OnPuzzleCompleted?.Invoke(true); // Here we notify the UI that the puzzle was completed successfully
-                }
-            }
+                OnUserMoveApplied?.Invoke();
+            }  
             else
             {
-                OnPuzzleCompleted?.Invoke(false); // Here we notify the UI that the puzzle was completed unsuccessfully
+                Console.WriteLine("User move is incorrect.");
+                OnPuzzleCompleted?.Invoke(false); 
             }
         }
 
@@ -115,12 +109,33 @@ namespace Frontend.Controller
             var chessMove = ConvertToChessDotNetMove(move);
             MoveType type = chessGame.MakeMove(chessMove, true);
             var newBoard = move.ApplyOn(CurrentBoard);
-            newBoard.LastMove = new AppliedMove(move);
+
+            var moveEffect = ApplyMoveEffect();
+            newBoard.LastMove = new AppliedMove(move, moveEffect);
+            newBoard.Turn = move.Piece.Set.Opposite();
 
             Console.WriteLine($"ApplyMove: Move applied - {move}. Turn before push: {newBoard.Turn}");
 
             gameHistory.Push(newBoard);
             CurrentBoard = gameHistory.Peek();
+        }
+
+        private MoveEffect ApplyMoveEffect()
+        {
+            var isCheck = chessGame.IsInCheck(chessGame.WhoseTurn);
+            var isCheckMate = chessGame.IsCheckmated(chessGame.WhoseTurn);
+
+            if (isCheck)
+            {
+                return MoveEffect.check;
+            }
+
+            if (isCheckMate)
+            {
+                return MoveEffect.checkmate;
+            }
+            
+            return MoveEffect.none;
         }
 
         private ChessDotNet.Move ConvertToChessDotNetMove(BoardMove move)
@@ -138,16 +153,18 @@ namespace Frontend.Controller
 
         private Queue<BoardMove> ParseSolutionMoves(List<string> solutionMoves)
         {
+            var tempBoard = new Board(CurrentBoard.Pieces, CurrentBoard.Turn);
             Queue<BoardMove> parsedMoves = new();
             foreach (var move in solutionMoves)
             {
-                var boardMove = ConvertSolutionMoveToBoardMove(move);
+                var boardMove = ConvertSolutionMoveToBoardMove(move, tempBoard);
+                tempBoard = boardMove.ApplyOn(tempBoard);
                 parsedMoves.Enqueue(boardMove);
             }
             return parsedMoves;
         }
 
-        private BoardMove ConvertSolutionMoveToBoardMove(string move)
+        private BoardMove ConvertSolutionMoveToBoardMove(string move, Board board)
         {
             if (move.Length != 4)
             {
@@ -160,7 +177,7 @@ namespace Frontend.Controller
             var from = PositionMethods.FromString(fromPositon[0].ToString(), fromPositon[1].ToString());
             var to = PositionMethods.FromString(toPosition[0].ToString(), toPosition[1].ToString());
 
-            var piece = CurrentBoard.Pieces[from];
+            var piece = board.Pieces[from];
 
             IPrimaryMove primaryMove = new Model.ChessMove.Move(piece, from, to);
             IPreMove? preMove = null;
@@ -181,19 +198,19 @@ namespace Frontend.Controller
                 if (Math.Abs(to.GetFile() - from.GetFile()) == 1 && CurrentBoard[to].IsEmpty)
                 {
                     var enPassantPosition = PositionMethods.From(to.GetFile(), from.GetRank());
-                    var capturedPiece = CurrentBoard[enPassantPosition].Piece;
+                    var capturedPiece = board[enPassantPosition].Piece;
 
                     if (capturedPiece is Model.ChessPiece.Pawn && capturedPiece.Set != piece.Set)
                     {
                         preMove = new Capture(piece, enPassantPosition);
                     }
                 }
-                else if (CurrentBoard[to].IsNotEmpty)
+                else if (board[to].IsNotEmpty)
                 {
                     preMove = new Capture(piece, to);
                 }
             }
-            else if (CurrentBoard[to].IsNotEmpty)
+            else if (board[to].IsNotEmpty)
             {
                 preMove = new Capture(piece, to);
             }
@@ -206,7 +223,9 @@ namespace Frontend.Controller
         {
             var from = FromChessDotNetPosition(chessMove.OriginalPosition);
             var to = FromChessDotNetPosition(chessMove.NewPosition);
+            
             var piece = CurrentBoard.Pieces[from];
+            
 
             IPrimaryMove primaryMove = new Model.ChessMove.Move(piece, from, to);
             IPreMove? preMove = null;

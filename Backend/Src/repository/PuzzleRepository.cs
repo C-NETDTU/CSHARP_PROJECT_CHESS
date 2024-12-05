@@ -9,10 +9,12 @@ namespace backend.src.repository
     public class PuzzleRepository : MongoRepository<Puzzle>, IPuzzleRepository
     {
         private readonly IMongoCollection<Puzzle> _collection;
+        private readonly ILogger<IPuzzleRepository> _puzzleLogger;
 
-        public PuzzleRepository(IMongoDatabase database) : base(database, "puzzles")
+        public PuzzleRepository(IMongoDatabase database, ILogger<IPuzzleRepository> puzzleLogger) : base(database, "puzzles")
         {
             _collection = database.GetCollection<Puzzle>("puzzles");
+            _puzzleLogger = puzzleLogger;
         }
 
         public async Task<IEnumerable<Puzzle>> GetByThemeAsync(string theme)
@@ -36,7 +38,7 @@ namespace backend.src.repository
             var result = await _collection.Aggregate<Puzzle>(pipeline).FirstOrDefaultAsync();
             if(result == null)
             {
-                Console.WriteLine("No puzzle found.");
+                _puzzleLogger.LogCritical("No puzzle found.");
                 Console.WriteLine($"{_collection.Database.DatabaseNamespace.DatabaseName}");
             }
             return result;
@@ -55,7 +57,7 @@ namespace backend.src.repository
                 result = await _collection.Aggregate<Puzzle>(pipelineint).FirstOrDefaultAsync();
                 if (result == null)
                 {
-                    Console.WriteLine($"No puzzle found for criteria: {criteria} with match: {match}");
+                    _puzzleLogger.LogError($"No puzzle found for criteria: {criteria} with match: {match}");
                 }
                 return result;
             }
@@ -69,13 +71,13 @@ namespace backend.src.repository
                 result = await _collection.Aggregate<Puzzle>(pipeline).FirstOrDefaultAsync();
                 if (result == null)
                 {
-                    Console.WriteLine($"No puzzle found for criteria: {criteria} with match: {match}");
+                    _puzzleLogger.LogError($"No puzzle found for criteria: {criteria} with match: {match}");
                 }
                 return result;
             }
             else
             {
-                Console.WriteLine($"No puzzle found.");
+                _puzzleLogger.LogCritical($"No puzzle found.");
                 return result;
             }
         }
