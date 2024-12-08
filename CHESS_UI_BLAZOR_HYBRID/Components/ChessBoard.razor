@@ -125,7 +125,7 @@ private AppliedMove? _previousMove;
 private int _gameIndex = 0;
 private int _activeIndex = 0;
 
-private bool BackwardDisabled => GameManager.gameHistory.Count < 1;
+private bool BackwardDisabled => GameManager.gameHistory.Count < 2;
 private bool ForwardDisabled => GameManager.poppedMoves.Count < 1;
 private bool MoveDisabled => _gameIndex != _activeIndex;
 
