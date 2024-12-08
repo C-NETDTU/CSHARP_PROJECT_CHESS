@@ -196,6 +196,8 @@ namespace Frontend.Controller
                     if (strikes == maxStrikes)
                     {
                         _logger.LogInformation("PuzzleManager: Max strikes reached.");
+                        // we reset the strikes:
+                        strikes = 0;
                         OnSurvialCompleted?.Invoke(true);
                     }
                     else
