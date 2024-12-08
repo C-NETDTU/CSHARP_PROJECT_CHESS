@@ -1,5 +1,8 @@
-﻿using Frontend.Controller;
+﻿using System.Threading.Tasks;
+using Frontend.Controller;
 using Frontend.Services;
+using Microsoft.Maui.Controls;
+
 namespace CHESS_UI_BLAZOR_HYBRID;
 
 public partial class App : Application
