@@ -11,7 +11,9 @@ public class GameManagerTests
     public void GameManager_InitializesCorrectly()
     {
         // Arrange
-        var gameManager = new GameManager();
+        var fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+        var solutionMoves = new List<string>();
+        var gameManager = new GameManager(fen, solutionMoves);
 
         // Act & Assert
         Assert.NotNull(gameManager.CurrentBoard);               // Ensure board is initialized
@@ -24,7 +26,9 @@ public class GameManagerTests
     public void GameController_GetValidMoves_ReturnsListOfBoardMoves()
     {
         // Arrange
-        var gameManager = new GameManager();
+        var fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+        var solutionMoves = new List<string>();
+        var gameManager = new GameManager(fen, solutionMoves);
 
         // The board is now be in initial position, we'll check valid moves for pawn on e2.
 
@@ -49,7 +53,9 @@ public class GameManagerTests
     public void GameManager_ApplyOn_UpdateBoardCorrectly()
     {
         // Arrange
-        var gameManager = new GameManager();
+        var fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+        var solutionMoves = new List<string>();
+        var gameManager = new GameManager(fen, solutionMoves);
 
         // Act
         var validMoves = gameManager.GetLegalMoves(Position.e2);
@@ -77,7 +83,9 @@ public class GameManagerTests
     public void GameManager_ApplyMove_CaptureIsHandled()
     {
         // Arrange
-        var gameManager = new GameManager();
+        var fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+        var solutionMoves = new List<string>();
+        var gameManager = new GameManager(fen, solutionMoves);
 
         // Act
         var validMoves = gameManager.GetLegalMoves(Position.e2);
@@ -116,7 +124,9 @@ public class GameManagerTests
     public void GameManager_ApplyMove_CastlingIsHandled()
     {
         // Arrange
-        var gameManager = new GameManager();
+        var fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+        var solutionMoves = new List<string>();
+        var gameManager = new GameManager(fen, solutionMoves);
 
         // Act
         var validMoves = gameManager.GetLegalMoves(Position.g1);
@@ -207,8 +217,10 @@ public class GameManagerTests
     {
         // Arrange
         // we'll set up a custom board with a pawn on a7 and a pawn on b2
-
-        var gameManager = new GameManager("8/PK6/8/8/8/8/1pk5/8 w - - 0 1");
+        var fen = "8/PK6/8/8/8/8/1pk5/8 w - - 0 1";
+        var solutionMoves = new List<string>();
+        var gameManager = new GameManager(fen, solutionMoves);
+        
         Assert.Equal(Set.White, gameManager.CurrentTurn); // White should start first
 
         var validMoves = gameManager.GetLegalMoves(Position.a7);
@@ -253,7 +265,8 @@ public class GameManagerTests
     {
 
         var fen = "4k3/8/8/8/3p4/8/4P3/4K3 w - - 0 1";
-        var gameManager = new GameManager(fen);
+        var solutionMoves = new List<string>();
+        var gameManager = new GameManager(fen, solutionMoves);
 
         var validMoves = gameManager.GetLegalMoves(Position.e2);
         var move = validMoves.Find(m => m.To == Position.e4);
