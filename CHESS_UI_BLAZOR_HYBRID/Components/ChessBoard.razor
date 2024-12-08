@@ -2,14 +2,16 @@
 @using Frontend.Model.ChessMove
 @using Frontend.Model.ChessPiece
 
+<div class="main-container">
+    
 <div class="turn-status">
     @if(GameManager?.CurrentBoard != null)
     {
-        <p>@GameManager.CurrentBoard.Turn.ToString()'s turn to move</p>
+        <p class="normal-text">@GameManager.CurrentBoard.Turn.ToString()'s turn to move</p>
     }
     else
     {
-        <p>Loading turn status...</p>
+        <p class="normal-text" >Loading turn status...</p>
     }
     
 </div>
@@ -117,11 +119,11 @@
         <p>Loading board...</p>
     }
 </div>
-<div>
-    <button @onclick="() => ToggleBoardFlip()">Flip Board</button>
+
+<button class="flip-button" @onclick="() => ToggleBoardFlip()">   <i class="fas fa-sync-alt"></i>  Flip Board   </button>
+
+
 </div>
-
-
 @code {
 [Parameter]
 public Frontend.Controller.GameManager GameManager { get; set; } // Passed as a parameter

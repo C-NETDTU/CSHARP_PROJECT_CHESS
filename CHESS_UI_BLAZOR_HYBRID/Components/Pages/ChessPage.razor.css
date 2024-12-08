@@ -23,7 +23,11 @@
 }
 
 .stat{
-    font-family: Arial, sans-serif; /* Customize font */
-    font-size: 1.2em; /* Adjust font size */
-    font-weight: bold; /* Make the text bold */
+    font-family: 'Lato', sans-serif; /* Use Lato font */
+    font-size: 1.4em; /* Adjust font size */
+    font-weight: 100; /* Lighter weight */
+}
+
+.bold {
+    font-weight: 700; /* Bold text */
 }
