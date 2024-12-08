@@ -76,6 +76,7 @@
                                     }
                                 }
                             }
+                            Console.WriteLine("Inside board rendering, previous move = " + _previousMove);
                             @if(_previousMove != null)
                             {
                                 var moveFile = FileMethods.GetFileInt(_previousMove.To);
@@ -128,6 +129,8 @@ private Set _opposingPlayer;
 
 private bool _isFlipped; 
 
+private AppliedMove? _previousMove;
+
 protected override async Task OnParametersSetAsync()
     {
         Console.WriteLine("ChessBoard: Parameters set, attempting to render.");
@@ -138,6 +141,8 @@ protected override async Task OnParametersSetAsync()
         Console.WriteLine("isFlipped = " + _isFlipped);
         await Task.Delay(1000);
         GameManager.PerformNextMove();
+        _previousMove = GameManager.CurrentBoard.LastMove;
+        Console.WriteLine($"_previousMove From: {_previousMove?.From}, To: {_previousMove?.To}");
         StateHasChanged(); // Trigger UI update after first move
     }
 
@@ -156,7 +161,6 @@ return $"images/{piece.GetType().Name.ToLower()}_{piece.Set.ToString().ToLower()
 private int? _selectedFile;
 private int? _selectedRank;
 private List<BoardMove>? _legalMoves;
-private AppliedMove? _previousMove;
 
 private Task OnSquareClicked(int file, int rank)
 {
