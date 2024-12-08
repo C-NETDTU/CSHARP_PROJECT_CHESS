@@ -5,7 +5,8 @@
 @if (!_isGameActive)
 {
     <div class="start-container">
-        <h1>Welcome to Survival Mode</h1>
+        <h2>Welcome to Survival Mode</h2>
+        <img src="images/Chess_survival_logo.png" alt="chess" class="logo-image"/>
         <button class="button" @onclick="StartSurvival">Start Survival</button>
     </div>
 }
@@ -16,7 +17,7 @@ else
             <p class="stat"><span class="bold">Score:</span> @PuzzleManager.score</p>
             <p class="stat"> <span class="bold">Streak:</span> @PuzzleManager.streak</p>
             <p class="stat"> <span class="bold">Strikes:</span> @PuzzleManager.strikes / 3</p>
-            </div>
+        </div>
 
         @if (PuzzleManager.GameManager != null)
         {

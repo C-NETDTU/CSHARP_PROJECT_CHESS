@@ -2,15 +2,15 @@
     display: flex; /* Use flexbox layout */
     flex-direction: column; /* Stack items vertically */
     align-items: center; /* Center horizontally */
-    min-height: 90vh; /* Full viewport height */
+    min-height: 90vh;
 }
 
 .chessboard {
     display: grid;
     grid-template-columns: repeat(8, 1fr); /* 8 equal columns */
     grid-template-rows: repeat(8, 1fr); /* 8 equal rows */
-    width: 50vw; /* Adjust the width to 80% of the viewport width */
-    height: 50vw; /* Maintain square aspect ratio based on width */
+    width: 60vw; /* Set width to 60% of viewport width */
+    height: 60vw; /* Maintain square aspect ratio based on width */
     border: 2px solid black;
 }
 
