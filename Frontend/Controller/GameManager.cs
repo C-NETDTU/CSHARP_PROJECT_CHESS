@@ -94,7 +94,7 @@ namespace Frontend.Controller
 
         public void GoBackOneMove()
         {
-            Console.WriteLine("Before pop");
+            Console.WriteLine("Before pop, gamehistory: " + gameHistory.Count);
             var poppedGame = gameHistory.Pop();
             Console.WriteLine("Going back one move.");
             Console.WriteLine("No last move - start of game: " + (poppedGame.LastMove?.BoardMove == null));
