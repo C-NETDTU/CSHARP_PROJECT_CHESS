@@ -26,10 +26,10 @@
                 {
                     var position = PositionMethods.From(file, rank);
                     var square = GameManager.CurrentBoard.Squares[position];
-        
+
                     var onclickFile = file;
                     var onclickRank = rank;
-                    
+
 
                     <div class="chessboard-square @(square.IsDark ? "dark" : "light")" @onclick="() => OnSquareClicked(onclickFile, onclickRank)">
                         @if (_selectedFile == file && _selectedRank == rank)
@@ -41,21 +41,6 @@
                                     <div class="highlight-overlay"></div>
                                 }
                             }
-        
-                
-                            //TODO: Add logic to highlight possible moves - DONE
-                            //TODO: Add dot to indicate possible moves - DONE
-                            //TODO: Make sure to only highlight legal moves - Check whether there is a piece on the square and whether it is the player's own piece - DONE
-                            //TODO: Add logic to move piece - DONE
-                            //TODO: Add logic to capture piece - DONE
-                            //TODO: Add animation for piece movement
-                            //TODO: Add logic to check for checkmate
-                            //TODO: Add logic to check for stalemate
-                            //TODO: Add logic to check for draw
-                            //TODO: Add logic to promote pawn
-                            //TODO: Look into move history
-                            //TODO: Undo move
-                
                         }
                         @if (_legalMoves != null)
                         {
@@ -78,26 +63,27 @@
                                     }
                                 }
                             }
-                            Console.WriteLine("Inside board rendering, previous move = " + _previousMove);
-                            @if(_previousMove != null)
+                            
+                        }
+                        @if (_previousMove != null)
+                        {
+                            var moveFile = FileMethods.GetFileInt(_previousMove.To);
+                            var moveRank = RankMethods.GetRankInt(_previousMove.To);
+                            if (moveFile == file && moveRank == rank)
                             {
-                                var moveFile = FileMethods.GetFileInt(_previousMove.To);
-                                var moveRank = RankMethods.GetRankInt(_previousMove.To);
-                                if (moveFile == file && moveRank == rank)
-                                {
-                                    <div class="previous-move"></div>
-                                }
-                                var moveFileFrom = FileMethods.GetFileInt(_previousMove.From);
-                                var moveRankFrom = RankMethods.GetRankInt(_previousMove.From);
-                                if (moveFileFrom == file && moveRankFrom == rank)
-                                {
-                                    <div class="previous-move"></div>
-                                }
+                                <div class="previous-move"></div>
+                            }
+
+                            var moveFileFrom = FileMethods.GetFileInt(_previousMove.From);
+                            var moveRankFrom = RankMethods.GetRankInt(_previousMove.From);
+                            if (moveFileFrom == file && moveRankFrom == rank)
+                            {
+                                <div class="previous-move"></div>
                             }
                         }
                         @if (square.Piece != null)
                         {
-                            <img src="@GetPieceImage(square.Piece)" alt="@square.Piece.GetType().Name" />
+                            <img src="@GetPieceImage(square.Piece)" alt="@square.Piece.GetType().Name"/>
                         }
                         @if ((_isFlipped && file == 1) || (!_isFlipped && file == 8))
                         {
@@ -134,7 +120,7 @@ private bool _isFlipped;
 private AppliedMove? _previousMove;
 
 protected override async Task OnParametersSetAsync()
-    {
+{
         Console.WriteLine("ChessBoard: Parameters set, attempting to render.");
         GameManager.OnUserMoveApplied += HandleUserMoveApplied;
         _opposingPlayer = GameManager.CurrentBoard.Turn;
@@ -146,7 +132,7 @@ protected override async Task OnParametersSetAsync()
         _previousMove = GameManager.CurrentBoard.LastMove;
         Console.WriteLine($"_previousMove From: {_previousMove?.From}, To: {_previousMove?.To}");
         StateHasChanged(); // Trigger UI update after first move
-    }
+}
 
 
 private string GetPieceImage(IPiece piece)
@@ -219,6 +205,7 @@ private async void HandleUserMoveApplied()
     {
         await Task.Delay(1000);
         GameManager.PerformNextMove();
+        _previousMove = GameManager.CurrentBoard.LastMove;
         StateHasChanged();
     }
     catch (Exception e)
