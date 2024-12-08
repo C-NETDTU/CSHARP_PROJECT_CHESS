@@ -132,6 +132,8 @@ protected override async Task OnParametersSetAsync()
     {
         Console.WriteLine("ChessBoard: Parameters set, attempting to render.");
         GameManager.OnUserMoveApplied += HandleUserMoveApplied;
+        _opposingPlayer = GameManager.CurrentBoard.Turn;
+        Console.WriteLine("opposing player = " + _opposingPlayer);
         _isFlipped = GameManager.CurrentBoard.Turn != Set.Black;
         Console.WriteLine("isFlipped = " + _isFlipped);
         await Task.Delay(1000);
@@ -162,7 +164,7 @@ private Task OnSquareClicked(int file, int rank)
     _selectedRank = rank;
     if (GameManager.CurrentBoard.Squares[PositionMethods.From(file, rank)].HasPiece(_opposingPlayer) == true)
     {
-        Console.WriteLine("Illegal move: Cannot move opponent's piece");
+        Console.WriteLine("Illegal move: Cannot move opponent's piece" + _opposingPlayer);
         return Task.CompletedTask;
     }
     else
