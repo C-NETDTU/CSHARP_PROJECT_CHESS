@@ -26,6 +26,12 @@
     font-family: 'Lato', sans-serif; /* Use Lato font */
     font-size: 1.4em; /* Adjust font size */
     font-weight: 100; /* Lighter weight */
+    background-color: #b58863; /* Primary blue color */
+    color: #fff; /* White text color */
+    border: none; /* Remove border */
+    margin-top: 10px; /* Add margin around the button */
+    border-radius: 10px; /* Rounded corners */
+    padding: 10px 20px; /* Spacing inside the button */
 }
 
 .bold {
@@ -70,4 +76,13 @@
 .logo-image {
     width: 80vw; /* Adjust width as needed */
     height: auto; /* Maintain aspect ratio */
+    border-radius: 15px;
+}
+
+.title {
+    font-family: 'Lato', sans-serif;
+    font-size: 3em; /* Bigger font size */
+    font-weight: 550;
+    color: #111d4a; /* Primary blue color */
+    margin-top: 10px; /* Add margin around the button */
 }

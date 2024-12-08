@@ -107,9 +107,12 @@
     }
 </div>
 
-<button class="flip-button" @onclick="() => ToggleBoardFlip()">   <i class="fas fa-sync-alt"></i>  Flip Board   </button>
-<button class="previous-button" @onclick="() => GoBackwards()" disabled="@BackwardDisabled"> <i class="fas fa-sync-alt"></i>  Backward </button>
-<button class="forward-button" @onclick="() => GoForwards()" disabled="@ForwardDisabled"> <i class="fas fa-sync-alt"></i> Forward </button>
+<div class="button-container">
+    <button class="flip-button" @onclick="() => GoBackwards()" disabled="@BackwardDisabled"> <i class="fas fa-arrow-left"></i>  Backward </button>
+    <button class="flip-button" @onclick="() => ToggleBoardFlip()">   <i class="fas fa-sync-alt"></i>  Flip Board   </button>
+    <button class="flip-button" @onclick="() => GoForwards()" disabled="@ForwardDisabled"> <i class="fas fa-arrow-right"></i> Forward </button>
+</div>
+
 
 
 </div>
