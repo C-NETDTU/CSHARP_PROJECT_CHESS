@@ -14,3 +14,16 @@
     height: 100px;
     border: 2px solid gray;
 }
+
+.stats-container {
+    display: flex;
+    justify-content: space-between; /* Adjust spacing between items */
+    align-items: center; /* Align items vertically if needed */
+    gap: 20px; /* Optional spacing between items */
+}
+
+.stat{
+    font-family: Arial, sans-serif; /* Customize font */
+    font-size: 1.2em; /* Adjust font size */
+    font-weight: bold; /* Make the text bold */
+}

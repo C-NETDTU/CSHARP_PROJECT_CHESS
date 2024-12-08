@@ -12,13 +12,16 @@
 else
 {
     <div class="game-container">
-        <p>Score: @PuzzleManager.score</p>
-        <p>Streak: @PuzzleManager.streak</p>
-        <p>Strikes: @PuzzleManager.strikes / 3</p>
+        <div class="stats-container">        
+            <p class="stat">Score: @PuzzleManager.score</p>
+            <p class="stat">Streak: @PuzzleManager.streak</p>
+            <p class="stat">Strikes: @PuzzleManager.strikes / 3</p>
+            </div>
+
         @if (PuzzleManager.GameManager != null)
         {
             Console.WriteLine("StartPage: GameManager is not null. Rendering ChessBoard.");
-            <ChessBoard GameManager="PuzzleManager.GameManager" />
+            <ChessBoard GameManager="PuzzleManager.GameManager"/>
         }
         else if (_newPuzzle)
         {
@@ -27,7 +30,7 @@ else
         else
         {
             Console.WriteLine("StartPage: GameManager is null. ChessBoard will not render.");
-            <p>Loading Puzzle</p>    
+            <p>Loading Puzzle</p>
         }
     </div>
 }
