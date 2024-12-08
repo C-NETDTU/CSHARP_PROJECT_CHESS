@@ -1,10 +1,8 @@
-using System;
-using System.Net.Http;
-using System.Threading.Tasks;
-using Frontend.Model.ChessBoard;
-using Frontend.Model.ChessMove;
-using Frontend.Model.ChessPiece;
+using System.Collections.Concurrent;
 using Shared.DTO;
+using Frontend.Services;
+using Microsoft.Extensions.Logging;
+using Frontend.Model.DTO;
 
 namespace Frontend.Controller
 {
@@ -12,7 +10,9 @@ namespace Frontend.Controller
     {
         public ApiManager ApiManager;
         public GameManager? GameManager;
-        private Queue<PuzzleDTO> puzzleQueue;
+        private ConcurrentQueue<PuzzleDTO> puzzleQueue;
+        private readonly IFileStorageService _storageService;
+        private readonly ILogger _logger;
         public int strikes;
         private int maxStrikes = 3;
         public int score;
@@ -21,40 +21,114 @@ namespace Frontend.Controller
         
         public event Action<bool>? OnSurvialCompleted; 
 
-        public PuzzleManager(ApiManager apiManager)
+        public PuzzleManager(ApiManager apiManager, IFileStorageService fileStorageService, ILogger<PuzzleManager> logger)
         {
             ApiManager = apiManager;
-            puzzleQueue = new Queue<PuzzleDTO>();
+            _storageService = fileStorageService;
+            _logger = logger;
+            puzzleQueue = new ConcurrentQueue<PuzzleDTO>();
             score = 0;
             strikes = 0;
             streak = 0;
             maxStreak = 0;
         }
 
-        public void Initialize()
+        public async Task Initialize()
         {
             try
             {
-                var puzzle = new PuzzleDTO
-                {
-                    Id = "1",
-                    PuzzleId = "1",
-                    FEN = "3r2k1/1p1B1ppp/p7/3p4/P2P4/4P3/5PPP/2R3K1 b - - 0 22",
-                    Moves = "d8d7 c1c8 d7d8 c8d8",
-                    Rating = 1000,
-                    Themes = ""
-                };
-                
-                var solutionMoves = ParseSolutionToList(puzzle.Moves);
+                var cacheWrapper = await _storageService.LoadAsync<PuzzleGameState>("savedGames.json");
 
-                GameManager = new GameManager(puzzle.FEN, solutionMoves); // Pass the FEN
-                Console.WriteLine("GameManager initialized successfully.");
+                if (cacheWrapper != null && cacheWrapper.Puzzles != null)
+                {
+                    foreach (var puzzle in cacheWrapper.Puzzles.Where(p => p != null))
+                    {
+                        puzzleQueue.Enqueue(puzzle);
+                    }
+                    strikes = cacheWrapper.Strikes;
+                    streak = cacheWrapper.Streak;
+                }
+                else
+                {
+                    var fastP = await ApiManager.RetrieveRandomPuzzle();
+                    if (fastP == null) {
+                        _logger.LogCritical("Error in retrieving puzzle. Check connection.");
+                        return;
+                    }
+                    puzzleQueue.Enqueue(fastP);
+                    var cache = await FetchPuzzles();
+                    cache.Insert(0,fastP);
+                    var saveData = new PuzzleGameState(cache,strikes, streak);
+                    await _storageService.SaveAsync("savedGames.json", saveData);
+                }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error in PuzzleManager.Initialize: {ex.Message}");
-                throw;
+                _logger.LogError($"Error in PuzzleManager.Initialize: {ex.Message}");
             }
+        }
+
+        public List<PuzzleDTO> GetQueue()
+        {
+            var puzzles = new List<PuzzleDTO>();
+            while (puzzleQueue.TryDequeue(out var puzzle))
+            {
+                if (puzzle != null)
+                {
+                    puzzles.Add(puzzle);
+                }
+                else
+                {
+                    _logger.LogWarning("Encountered a null puzzle in the queue.");
+                }
+            }
+            return puzzles;
+        }
+
+        public async Task<List<PuzzleDTO>> FetchPuzzles(int amount = 10)
+        {
+            try
+            {
+                _logger.LogInformation("PuzzleManager: Fetching 10 puzzles...");
+                var tasks = new List<Task<PuzzleDTO?>>();
+                for (int i = 0; i < amount; i++)
+                {
+                    tasks.Add(ApiManager.RetrieveRandomPuzzle());
+                }
+                var puzzles = await Task.WhenAll(tasks);
+                _logger.LogInformation($"Puzzles fetched successfully. Total puzzles in queue: {puzzleQueue.Count}");
+                return [.. puzzles];
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error fetching puzzles: {ex.Message}");
+                return [];
+            }
+        }
+
+        //Idea is to call this method and the DequeuePuzzle when a puzzle has been completed.
+        public async Task FetchAndAddPuzzle()
+        {
+            try {
+                var puzzle = await ApiManager.RetrieveRandomPuzzle();
+                puzzleQueue.Enqueue(puzzle);
+            } catch (Exception ex) { _logger.LogError($"Err: {ex}"); }
+        }
+        public async Task DequeuePuzzle()
+        {
+            try
+            {
+                await Task.Run(() =>
+                {
+                    PuzzleDTO pDTO = new PuzzleDTO();
+                    puzzleQueue.TryDequeue(out var puzzle);
+                    if (puzzle != null)
+                    {
+                        _logger.LogInformation($"Sucessfully d-q puzzle: {puzzle}");
+                    }
+                });
+            }
+            catch(Exception ex) { _logger.LogError($"Err: {ex}"); }
         }
 
         private List<string> ParseSolutionToList(string solution)
@@ -71,25 +145,36 @@ namespace Frontend.Controller
         {
             try
             {
-                Console.WriteLine("PuzzleManager: Fetching a random puzzle...");
-                PuzzleDTO? puzzleDto = await ApiManager.RetrieveRandomPuzzle();
-
+                _logger.LogInformation("PuzzleManager: Fetching a puzzle...");
+                if (!puzzleQueue.TryPeek(out var puzzleDto))
+                {
+                    puzzleDto = await ApiManager.RetrieveRandomPuzzle();
+                    if(puzzleDto == null)
+                    {
+                        throw new Exception("Invalid puzzle! Check connection.");
+                    }
+                    _logger.LogInformation("Fetched new puzzle from the API.");
+                }
+                else
+                {
+                    _logger.LogInformation($"Fetched puzzle from the local queue: {puzzleDto.FEN}");
+                }
                 if (puzzleDto != null)
                 {
-                    Console.WriteLine($"PuzzleManager: Fetched puzzle with FEN: {puzzleDto.FEN} and moves: {puzzleDto.Moves}");
-                    
+                    _logger.LogInformation($"PuzzleManager: Fetched puzzle with FEN: {puzzleDto.FEN} and moves: {puzzleDto.Moves}");
+
                     var solution = ParseSolutionToList(puzzleDto.Moves);
-                    GameManager = new GameManager(puzzleDto.FEN, solution );
+                    GameManager = new GameManager(puzzleDto.FEN, solution);
                     GameManager.OnPuzzleCompleted += HandlePuzzleCompleted;
                 }
                 else
                 {
-                    Console.WriteLine("PuzzleManager: No puzzle returned from the API.");
+                    _logger.LogInformation("PuzzleManager: No puzzle returned from the API.");
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"PuzzleManager: Error fetching puzzle: {ex.Message}");
+                _logger.LogError($"PuzzleManager: Error fetching puzzle: {ex.Message}");
             }
         }
 
@@ -106,23 +191,23 @@ namespace Frontend.Controller
                 }
                 else
                 {
-                    Console.WriteLine("PuzzleManager: Updated strike");
+                    _logger.LogInformation("PuzzleManager: Updated strike");
                     strikes++;
                     if (strikes == maxStrikes)
                     {
-                        Console.WriteLine("PuzzleManager: Max streaks reached.");
+                        _logger.LogInformation("PuzzleManager: Max strikes reached.");
                         OnSurvialCompleted?.Invoke(true);
                     }
                     else
                     {
-                        Console.WriteLine("PuzzleManager: One strike made");
+                        _logger.LogInformation("PuzzleManager: One strike made");
                         OnSurvialCompleted?.Invoke(false);
                     }
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"PuzzleManager: Exception in HandlePuzzleCompleted - {ex.Message}");
+                _logger.LogCritical($"PuzzleManager: Exception in HandlePuzzleCompleted - {ex.Message}");
             }
         }
 

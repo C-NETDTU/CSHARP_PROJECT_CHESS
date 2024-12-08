@@ -2,11 +2,11 @@
 {
     public class PuzzleDBSettings
     {
-        public required string ConnectionString { get; set; } = "mongodb://localhost:27017/";
+        public string ConnectionString { get; set; } = "mongodb+srv://dbUser:dbUserPassword@puzzledb.fm17g.mongodb.net/?retryWrites=true&w=majority&appName=PuzzleDB\r\n";
 
-        public required string DatabaseName { get; set; } = "puzzleDB";
+        public string DatabaseName { get; set; } = "puzzleDB";
 
-        public required string PuzzleCollectionName { get; set; } = "puzzles";
+        public string PuzzleCollectionName { get; set; } = "puzzles";
     }
 
 }

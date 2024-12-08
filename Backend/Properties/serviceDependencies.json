@@ -5,7 +5,7 @@
     },
     "mongodb1": {
       "type": "mongodb",
-      "connectionId": "mongodb:::localhost:27017",
+      "connectionId": "mongodb+srv://dbUser:dbUserPassword@puzzledb.fm17g.mongodb.net/?retryWrites=true&w=majority&appName=PuzzleDB",
       "dynamicId": null
     }
   }
