@@ -5,20 +5,24 @@
 @if (!_isGameActive)
 {
     <div class="start-container">
-        <h1>Welcome to Survival Mode</h1>
-        <button class="start-button" @onclick="StartSurvival">Start Survival</button>
+        <span class="title">Welcome to Survival Mode</span>
+        <img src="images/Chess_survival_logo.png" alt="chess" class="logo-image"/>
+        <button class="button" @onclick="StartSurvival">Start Survival</button>
     </div>
 }
 else
 {
     <div class="game-container">
-        <p>Score: @PuzzleManager.score</p>
-        <p>Streak: @PuzzleManager.streak</p>
-        <p>Strikes: @PuzzleManager.strikes / 3</p>
+        <div class="stats-container">        
+            <p class="stat"><span class="bold">Score:</span> @PuzzleManager.score</p>
+            <p class="stat"> <span class="bold">Streak:</span> @PuzzleManager.streak</p>
+            <p class="stat"> <span class="bold">Strikes:</span> @PuzzleManager.strikes / 3</p>
+        </div>
+
         @if (PuzzleManager.GameManager != null)
         {
             Console.WriteLine("StartPage: GameManager is not null. Rendering ChessBoard.");
-            <ChessBoard GameManager="PuzzleManager.GameManager" />
+            <ChessBoard GameManager="PuzzleManager.GameManager"/>
         }
         else if (_newPuzzle)
         {
@@ -27,7 +31,7 @@ else
         else
         {
             Console.WriteLine("StartPage: GameManager is null. ChessBoard will not render.");
-            <p>Loading Puzzle</p>    
+            <p>Loading Puzzle</p>
         }
     </div>
 }
