@@ -9,6 +9,9 @@
         <img src="images/Chess_survival_logo.png" alt="chess" class="logo-image"/>
         <button class="button" @onclick="StartSurvival">Start Survival</button>
     </div>
+    Task.Run(async () => { 
+        await PuzzleManager.Initialize(); 
+    });
 }
 else
 {

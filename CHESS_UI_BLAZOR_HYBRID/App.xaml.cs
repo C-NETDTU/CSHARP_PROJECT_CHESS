@@ -20,9 +20,9 @@ public partial class App : Application
     protected override void OnStart()
     {
         base.OnStart();
-        Task.Run(() =>
+        Task.Run(async () =>
         {
-            _puzzleManager.Initialize();
+            await _puzzleManager.Initialize();
         });
     }
     protected override void OnResume()
