@@ -1,0 +1,99 @@
+@page "/start"
+@using System.Reflection.Metadata
+@inject Frontend.Controller.PuzzleManager PuzzleManager
+
+@if (!_isGameActive)
+{
+    <div class="start-container">
+        <span class="title">Welcome to Survival Mode</span>
+        <img src="images/Chess_survival_logo.png" alt="chess" class="logo-image"/>
+        <button class="button" @onclick="StartSurvival">Start Survival</button>
+    </div>
+    Task.Run(async () => { 
+        await PuzzleManager.Initialize(); 
+    });
+}
+else
+{
+    <div class="game-container">
+        <div class="stats-container">        
+            <p class="stat"><span class="bold">Score:</span> @PuzzleManager.score</p>
+            <p class="stat"> <span class="bold">Streak:</span> @PuzzleManager.streak</p>
+            <p class="stat"> <span class="bold">Strikes:</span> @PuzzleManager.strikes / 3</p>
+        </div>
+
+        @if (PuzzleManager.GameManager != null)
+        {
+            Console.WriteLine("StartPage: GameManager is not null. Rendering ChessBoard.");
+            <ChessBoard GameManager="PuzzleManager.GameManager"/>
+        }
+        else if (_newPuzzle)
+        {
+            <p>Loading new puzzle...</p>
+        }
+        else
+        {
+            Console.WriteLine("StartPage: GameManager is null. ChessBoard will not render.");
+            <p>Loading Puzzle</p>
+        }
+    </div>
+}
+
+@code {
+    private bool _isGameActive = false;
+    private bool _newPuzzle = false;
+
+    protected override void OnInitialized()
+    {
+        PuzzleManager.OnSurvialCompleted += HandleSurvivalCompleted;
+        Console.WriteLine("Subscribed to OnSurvivalCompleted");
+    }
+
+    public void Dispose()
+    {
+        PuzzleManager.OnSurvialCompleted -= HandleSurvivalCompleted;
+    }
+
+    private async Task StartSurvival()
+    {
+        try
+        {
+             await PuzzleManager.FetchAndLoadPuzzle(); // Initialize PuzzleManager
+            _isGameActive = true;
+        }
+        catch (Exception ex)
+        {
+            _isGameActive = false; // Reset game state
+            Console.WriteLine($"Error in StartSurvival: {ex.Message}");
+        }
+    }
+
+    private async void HandleSurvivalCompleted(bool success)
+    {
+        Console.WriteLine("Event triggered from puzzlemanager");
+        if (success)
+        {
+            Console.WriteLine("Survival mode completed 3/3 strikes");
+            _isGameActive = false; // End survival mode
+        }
+        else
+        {
+            Console.WriteLine("Puzzle not completed, loading new puzzle");
+            _newPuzzle = true;
+
+            try
+            {
+                await Task.Delay(1000);
+                await PuzzleManager.DequeuePuzzle();
+                await PuzzleManager.FetchAndLoadPuzzle();
+                _newPuzzle = false;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error loading new puzzle: {ex.Message}");
+            }
+        }
+
+        StateHasChanged(); // Refresh UI
+    }
+}

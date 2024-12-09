@@ -1,0 +1,173 @@
+.main-container {
+    display: flex; /* Use flexbox layout */
+    flex-direction: column; /* Stack items vertically */
+    align-items: center; /* Center horizontally */
+    min-height: 90vh;
+}
+
+.chessboard {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr); /* 8 equal columns */
+    grid-template-rows: repeat(8, 1fr); /* 8 equal rows */
+    width: 60vw; /* Set width to 60% of viewport width */
+    height: 60vw; /* Maintain square aspect ratio based on width */
+    border: 2px solid black;
+}
+
+.chessboard-row {
+    display: contents; /* Ensure rows flow naturally */
+}
+
+.chessboard-square {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.chessboard-square.light {
+    background-color: #f0d9b5;
+    --rank-color: #b58863;
+}
+
+.chessboard-square.dark {
+    background-color: #b58863;
+    --rank-color: #f0d9b5;
+}
+
+.chessboard-square img {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+.highlight-overlay{
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: green; /* Yellow with some transparency */
+    pointer-events: none; /* Allow clicks to pass through the highlight */
+}
+
+.turn-status {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.move-dot {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 35%;
+    height: 35%;
+    background-color: darkgreen;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.capture-dot {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: 5px solid green; /* Green border for captures */
+    box-sizing: border-box; /* Ensure border doesn't expand the square */
+    z-index: 1; /* Ensure it renders on top of the square */
+}
+
+.clickable-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%; /* Full width of the square */
+    height: 100%; /* Full height of the square */
+    pointer-events: all; /* Ensure it captures clicks */
+    cursor: pointer; /* Change cursor to pointer */
+    z-index: 2; /* Ensure it’s on top of the square */
+}
+
+.previous-move{
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 0, 0.5); /* Blue with some transparency */
+    pointer-events: none; /* Allow clicks to pass through the highlight */
+}
+
+.rank-label{
+    position: absolute;
+    top: 5%; /* Top position */
+    right: 5%; /* Right position */
+    font-size: 1vw; /* Adjust font size as needed */
+    color: var(--rank-color); /* Ensure visibility */
+    pointer-events: none; /* Prevent interaction */
+}
+
+.file-label{
+    position: absolute;
+    bottom: 5%; /* Align to the absolute bottom */
+    left: 5%; /* Align to the absolute left */
+    margin: 0; /* Ensure no extra spacing */
+    padding: 0; /* Remove default padding */
+    line-height: 1; /* Reset line height to avoid extra spacing */
+    font-size: 1vw; 
+    color: var(--rank-color); /* Ensure visibility */
+    pointer-events: none; /* Prevent interaction */
+}
+
+.normal-text {
+    font-family: 'Lato', sans-serif; /* Use Lato font */
+    font-size: 1.2em; /* Adjust font size */
+    font-weight: 200; /* Lighter weight */
+
+}
+
+.flip-button {
+    font-family: 'Lato', sans-serif;
+    font-size: 1.4em; /* Bigger font size */
+    font-weight: 200; 
+    background-color: #b58863; /* Primary blue color */
+    color: #fff; /* White text color */
+    border: none; /* Remove border */
+    border-radius: 10px; /* Rounded corners */
+    padding: 10px 20px; /* Spacing inside the button */
+    cursor: pointer; /* Pointer cursor on hover */
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2); /* Add shadow for depth */
+    transition: background-color 0.3s, transform 0.2s; /* Smooth effects */
+    margin-top: 10px; /* Add margin around the button */
+    
+}
+
+.flip-button:hover {
+    background-color: #f0d9b5; /* Darker blue on hover */
+    transform: scale(1.05); /* Slight zoom effect */
+}
+
+.flip-button:active {
+    background-color: #2c2b2b; /* Even darker blue on click */
+    transform: scale(0.95); /* Slightly shrink on click */
+}
+
+.button-container {
+    display: flex;
+    gap: 20px;
+}
+
+.text-box{
+    font-family: 'Lato', sans-serif;
+    font-size: 1.4em; /* Bigger font size */
+    font-weight: 200;
+    background-color: #b58863; /* Primary blue color */
+    color: #fff; /* White text color */
+    border: none; /* Remove border */
+    padding: 10px 20px;
+    margin-top: 10px; /* Add margin around the button */
+}

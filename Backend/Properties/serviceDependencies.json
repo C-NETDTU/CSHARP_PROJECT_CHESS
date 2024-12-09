@@ -1,0 +1,12 @@
+{
+  "dependencies": {
+    "secrets1": {
+      "type": "secrets"
+    },
+    "mongodb1": {
+      "type": "mongodb",
+      "connectionId": "mongodb+srv://dbUser:dbUserPassword@puzzledb.fm17g.mongodb.net/?retryWrites=true&w=majority&appName=PuzzleDB",
+      "dynamicId": null
+    }
+  }
+}

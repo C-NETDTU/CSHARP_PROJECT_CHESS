@@ -1,0 +1,263 @@
+@using Frontend.Model.ChessBoard
+@using Frontend.Model.ChessMove
+@using Frontend.Model.ChessPiece
+
+<div class="main-container">
+    
+<div class="turn-status">
+    @if(GameManager?.CurrentBoard != null)
+    {
+        <p class="normal-text">@GameManager.CurrentBoard.Turn.ToString()'s turn to move</p>
+    }
+    else
+    {
+        <p class="normal-text" >Loading turn status...</p>
+    }
+    
+</div>
+
+<div class="chessboard">
+    @if (GameManager?.CurrentBoard != null) // Ensure CurrentBoard is not null
+    {
+        @for (int rank = (_isFlipped ? 1 : 8); (_isFlipped ? rank <= 8 : rank >= 1); rank += (_isFlipped ? 1 : -1))
+        {
+            <div class="chessboard-row">
+                @for (int file = (_isFlipped ? 8 : 1); (_isFlipped ? file >= 1 : file <= 8); file += (_isFlipped ? -1 : 1))
+                {
+                    var position = PositionMethods.From(file, rank);
+                    var square = GameManager.CurrentBoard.Squares[position];
+
+                    var onclickFile = file;
+                    var onclickRank = rank;
+
+
+                <div class="chessboard-square @(square.IsDark ? "dark" : "light")" @onclick="MoveDisabled ? (() => {}) : (() => OnSquareClicked(onclickFile, onclickRank))">
+
+                @if (_selectedFile == file && _selectedRank == rank)
+                        {
+                            if (square.Piece != null) // If there is a piece on the square
+                            {
+                                if (square.Piece.Set != _opposingPlayer) // If the piece belongs to the current player
+                                {
+                                    <div class="highlight-overlay"></div>
+                                }
+                            }
+                        }
+                        @if (_legalMoves != null)
+                        {
+                            foreach (var boardMove in _legalMoves)
+                            {
+                                var moveFile = FileMethods.GetFileInt(boardMove.To);
+                                var moveRank = RankMethods.GetRankInt(boardMove.To);
+                                if (moveFile == file && moveRank == rank)
+                                {
+                                    if (boardMove.PreMove != null)
+                                    {
+
+                                        <div class="capture-dot" @onclick="() => OnMoveDotClicked(boardMove)"></div>
+
+                                    }
+                                    else
+                                    {
+                                        <div class="move-dot"></div>
+                                        <div class="clickable-overlay" @onclick="() => OnMoveDotClicked(boardMove)"></div>
+                                    }
+                                }
+                            }
+                            
+                        }
+                        @if (_previousMove != null)
+                        {
+                            var moveFile = FileMethods.GetFileInt(_previousMove.To);
+                            var moveRank = RankMethods.GetRankInt(_previousMove.To);
+                            if (moveFile == file && moveRank == rank)
+                            {
+                                <div class="previous-move"></div>
+                            }
+
+                            var moveFileFrom = FileMethods.GetFileInt(_previousMove.From);
+                            var moveRankFrom = RankMethods.GetRankInt(_previousMove.From);
+                            if (moveFileFrom == file && moveRankFrom == rank)
+                            {
+                                <div class="previous-move"></div>
+                            }
+                        }
+                        @if (square.Piece != null)
+                        {
+                            <img src="@GetPieceImage(square.Piece)" alt="@square.Piece.GetType().Name"/>
+                        }
+                        @if ((_isFlipped && file == 1) || (!_isFlipped && file == 8))
+                        {
+                            var rankNumber = square.Position.GetRank().ToString();
+                            <p class="rank-label">@rankNumber</p>
+                        }
+                        @if ((!_isFlipped && rank == 1) || (_isFlipped && rank == 8))
+                        {
+                            var fileLetter = square.Position.GetFileChar().ToString();
+                            <p class="file-label">@fileLetter</p>
+                        }
+                    </div>
+                }
+            </div>
+        }
+    }
+    else
+    {
+        <p>Loading board...</p>
+    }
+</div>
+
+<div class="button-container">
+    <button class="flip-button" @onclick="() => GoBackwards()" disabled="@BackwardDisabled"> <i class="fas fa-arrow-left"></i>  Backward </button>
+    <button class="flip-button" @onclick="() => ToggleBoardFlip()">   <i class="fas fa-sync-alt"></i>  Flip Board   </button>
+    <button class="flip-button" @onclick="() => GoForwards()" disabled="@ForwardDisabled"> <i class="fas fa-arrow-right"></i> Forward </button>
+</div>
+
+
+
+</div>
+@code {
+[Parameter]
+public Frontend.Controller.GameManager GameManager { get; set; } // Passed as a parameter
+private Set _opposingPlayer;
+
+private bool _isFlipped;
+
+private AppliedMove? _previousMove;
+
+private int _gameIndex = 0;
+private int _activeIndex = 0;
+
+private bool BackwardDisabled => GameManager.gameHistory.Count < 2;
+private bool ForwardDisabled => GameManager.poppedMoves.Count < 1;
+private bool MoveDisabled => _gameIndex != _activeIndex;
+
+
+
+protected override async Task OnParametersSetAsync()
+{
+        Console.WriteLine("ChessBoard: Parameters set, attempting to render.");
+        GameManager.OnUserMoveApplied += HandleUserMoveApplied;
+        _opposingPlayer = GameManager.CurrentBoard.Turn;
+        Console.WriteLine("opposing player = " + _opposingPlayer);
+        _isFlipped = GameManager.CurrentBoard.Turn != Set.Black;
+        Console.WriteLine("isFlipped = " + _isFlipped);
+        await Task.Delay(1000);
+        GameManager.PerformNextMove();
+        _previousMove = GameManager.CurrentBoard.LastMove;
+        Console.WriteLine($"_previousMove From: {_previousMove?.From}, To: {_previousMove?.To}");
+        _gameIndex++;
+        _activeIndex++;
+        StateHasChanged(); // Trigger UI update after first move
+}
+
+
+private string GetPieceImage(IPiece piece)
+{
+// Map piece type and set to an image URL
+var filePath = $"images/{piece.GetType().Name.ToLower()}_{piece.Set.ToString().ToLower()}.svg";
+
+    // Print the file path to the console for debugging
+    // Console.WriteLine("File path: " + filePath);
+return $"images/{piece.GetType().Name.ToLower()}_{piece.Set.ToString().ToLower()}.svg";
+}
+
+
+private int? _selectedFile;
+private int? _selectedRank;
+private List<BoardMove>? _legalMoves;
+
+private Task OnSquareClicked(int file, int rank)
+{
+    _selectedFile = file;
+    _selectedRank = rank;
+    if (GameManager.CurrentBoard.Squares[PositionMethods.From(file, rank)].HasPiece(_opposingPlayer) == true)
+    {
+        Console.WriteLine("Illegal move: Cannot move opponent's piece" + _opposingPlayer);
+        return Task.CompletedTask;
+    }
+    else
+    {
+        var pos = PositionMethods.From(file, rank);
+        Console.WriteLine("Position:" + pos);
+        Console.WriteLine(GameManager.CurrentBoard.Turn.ToString());
+    
+        _legalMoves = GameManager.GetLegalMoves(PositionMethods.From(file, rank));
+    
+        foreach (var boardMove in _legalMoves)
+        {
+            Console.WriteLine($"Legal move: {boardMove.ToString(false)}");
+            var moveFile = FileMethods.GetFileInt(boardMove.To);
+            var moveRank = RankMethods.GetRankInt(boardMove.To);
+            Console.WriteLine("Move file: " + moveFile + " Move rank: " + moveRank);
+        }
+    
+        return Task.CompletedTask;
+    }
+    
+}
+
+private Task OnMoveDotClicked(BoardMove boardMove)
+{
+    if (GameManager.CurrentBoard.Turn != boardMove.Piece.Set)
+    {
+        Console.WriteLine("Illegal move: Not the player's turn");
+    }
+    else
+    {
+        Console.WriteLine("Applying move: " + boardMove.ToString(false));
+        GameManager.OnUserMove(boardMove);
+        _gameIndex++;
+        _activeIndex++;
+        //_previousMove = boardMove;
+        _previousMove = GameManager.CurrentBoard.LastMove;
+        return Task.CompletedTask;
+    }
+    return Task.CompletedTask;
+}
+
+private async void HandleUserMoveApplied()
+{
+    Console.WriteLine("Event triggered from GameManager - UserMove has been applied");
+    try
+    {
+        await Task.Delay(1000);
+        GameManager.PerformNextMove();
+        _gameIndex++;
+        _activeIndex++;
+        _previousMove = GameManager.CurrentBoard.LastMove;
+        StateHasChanged();
+    }
+    catch (Exception e)
+    {
+        Console.WriteLine(e);
+        throw;
+    }
+}
+
+private void ToggleBoardFlip()
+{
+    _isFlipped = !_isFlipped;
+    StateHasChanged();
+}
+
+private void GoBackwards()
+{
+    Console.WriteLine("Trying to call go back one move");
+    GameManager.GoBackOneMove();
+    _activeIndex--;
+    _previousMove = GameManager.CurrentBoard.LastMove;
+    Console.WriteLine("Should move be disabled: " + MoveDisabled);
+    StateHasChanged();
+}
+
+private void GoForwards()
+{
+    GameManager.GoForwardOneMove();
+    _activeIndex++;
+    _previousMove = GameManager.CurrentBoard.LastMove;
+    Console.WriteLine("Should move be disabled: " + MoveDisabled);
+    StateHasChanged();
+}
+
+}
