@@ -39,6 +39,7 @@ namespace Frontend.Controller
             {
                 var cacheWrapper = await _storageService.LoadAsync<PuzzleGameState>("savedGames.json");
 
+                puzzleQueue.Clear();
                 if (cacheWrapper != null && cacheWrapper.Puzzles != null)
                 {
                     foreach (var puzzle in cacheWrapper.Puzzles.Where(p => p != null))
@@ -197,6 +198,11 @@ namespace Frontend.Controller
                     {
                         _logger.LogInformation("PuzzleManager: Max strikes reached.");
                         OnSurvialCompleted?.Invoke(true);
+                        _storageService.DeleteAsync("savedGames.json");
+                        puzzleQueue.Clear();
+                        strikes = 0;
+                        score = 0;
+
                     }
                     else
                     {

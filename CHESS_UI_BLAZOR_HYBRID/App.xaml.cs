@@ -1,5 +1,8 @@
-﻿using Frontend.Controller;
+﻿using System.Threading.Tasks;
+using Frontend.Controller;
 using Frontend.Services;
+using Microsoft.Maui.Controls;
+
 namespace CHESS_UI_BLAZOR_HYBRID;
 
 public partial class App : Application
@@ -17,9 +20,9 @@ public partial class App : Application
     protected override void OnStart()
     {
         base.OnStart();
-        Task.Run(() =>
+        Task.Run(async () =>
         {
-            _puzzleManager.Initialize();
+            await _puzzleManager.Initialize();
         });
     }
     protected override void OnResume()

@@ -1,3 +1,4 @@
+using System;
 using ChessDotNet;
 using ChessDotNet.Pieces;
 using Frontend.Model.ChessBoard;
@@ -14,6 +15,8 @@ namespace Frontend.Controller
 
         private Queue<BoardMove>? solutionMoves;
         public Stack<Board> gameHistory { get; private set; }
+        
+        public Stack<BoardMove> poppedMoves { get; set; }
 
         public Board CurrentBoard { get; private set; }
 
@@ -28,8 +31,10 @@ namespace Frontend.Controller
 
             chessGame = new ChessGame(fen);
             gameHistory = new Stack<Board>();
+            poppedMoves = new Stack<BoardMove>();
             var (pieces, turn) = FenToDictionary(fen);
             CurrentBoard = new Board(pieces, turn);
+            gameHistory.Push(CurrentBoard);
             System.Console.WriteLine("Game initialized with pieces: ");
             foreach (var piece in CurrentBoard.Pieces)
             {
@@ -87,6 +92,32 @@ namespace Frontend.Controller
             }
         }
 
+        public void GoBackOneMove()
+        {
+            Console.WriteLine("Before pop, gamehistory: " + gameHistory.Count);
+            var poppedGame = gameHistory.Pop();
+            Console.WriteLine("Going back one move.");
+            Console.WriteLine("No last move - start of game: " + (poppedGame.LastMove?.BoardMove == null));
+            if (poppedGame.LastMove?.BoardMove != null) poppedMoves.Push(poppedGame.LastMove.BoardMove);
+            chessGame.Undo(1);
+            CurrentBoard = gameHistory.Peek();
+            Console.WriteLine("Undo performed, last applied move: " + CurrentBoard.LastMove?.ToString());
+        }
+
+        public void GoForwardOneMove()
+        {
+            Console.WriteLine("Number of popped moves: " + poppedMoves.Count);
+            var lastPoppedMove = poppedMoves.Pop();
+            var chessDotNetMove = ConvertToChessDotNetMove(lastPoppedMove);
+            chessGame.MakeMove(chessDotNetMove, true);
+            var newBoard = lastPoppedMove.ApplyOn(CurrentBoard);
+
+            var moveEffect = ApplyMoveEffect();
+            newBoard.LastMove = new AppliedMove(lastPoppedMove, moveEffect);
+            newBoard.Turn = lastPoppedMove.Piece.Set.Opposite();
+            gameHistory.Push(newBoard);
+            CurrentBoard = gameHistory.Peek();
+        }
         public List<BoardMove> GetLegalMoves(ChessPosition customPosition)
         {
             var chessDotNetPosition = ToChessDotNetPosition(customPosition);
